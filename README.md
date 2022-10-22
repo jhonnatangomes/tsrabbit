@@ -19,3 +19,22 @@ unary      -> ( "-" | "!" ) expression ;
 binary     -> expression operator expression ;
 operator   -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" | "++" | "--" | "+=" | "-=" | "*=" | "/=";
 ```
+
+## Installation
+
+You can build the project by cloning the repo and running the build script:
+
+```
+git clone https://github.com/jhonnatangomes/tsrabbit
+cd tsrabbit
+yarn
+yarn build
+```
+
+After the build has succeeded, a `bin`directory will be created and you can run the interpreter via `bin/index.js`. You can also run the internal install-rabbit script via `yarn install-rabbit`. This will bundle the ts code into a single executable, place it under `~/.tsrabbit/tsrabbit` and give it executable permission.
+
+You can also install the tsrabbit executable in the folder mentioned above and add it to your path in one go by running the command below:
+
+```
+git clone https://github.com/jhonnatangomes/tsrabbit /tmp && chmod +x /tmp/tsrabbit/tools/install.sh && /tmp/tsrabbit/tools/install.sh
+```

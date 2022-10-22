@@ -37,6 +37,7 @@ export enum TokenType {
   AND,
   CLASS,
   ELSE,
+  EXTENDS,
   FALSE,
   FUN,
   FOR,

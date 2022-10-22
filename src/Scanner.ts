@@ -47,6 +47,7 @@ const {
   TRUE,
   VAR,
   WHILE,
+  EXTENDS,
 } = TokenType;
 
 export default class Scanner {
@@ -57,6 +58,7 @@ export default class Scanner {
   private static keywords: Record<string, TokenType> = {
     and: AND,
     class: CLASS,
+    extends: EXTENDS,
     else: ELSE,
     false: FALSE,
     for: FOR,
