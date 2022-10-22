@@ -33,8 +33,14 @@ yarn build
 
 After the build has succeeded, a `bin`directory will be created and you can run the interpreter via `bin/index.js`. You can also run the internal install-rabbit script via `yarn install-rabbit`. This will bundle the ts code into a single executable, place it under `~/.tsrabbit/tsrabbit` and give it executable permission.
 
-You can also install the tsrabbit executable in the folder mentioned above and add it to your path in one go by running the command below:
+In case you don't have yarn installed, you can install it with npm:
 
 ```
-git clone https://github.com/jhonnatangomes/tsrabbit /tmp && chmod +x /tmp/tsrabbit/tools/install.sh && /tmp/tsrabbit/tools/install.sh
+npm i -g install yarn
+```
+
+You can also install the tsrabbit executable in the folder mentioned above by running the command below:
+
+```
+git clone https://github.com/jhonnatangomes/tsrabbit /tmp/tsrabbit && cd /tmp/tsrabbit && chmod +x ./tools/install.sh && ./tools/install.sh
 ```

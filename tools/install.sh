@@ -1,4 +1,3 @@
 npm i
-npm run build
-npm run install-rabbit
-export PATH="~/.tsrabbit:$PATH"
+npx tsc -b tsconfig.json && chmod +x ./bin/index.js tools/**/* && ./tools/postbuild.js
+./tools/install.js
