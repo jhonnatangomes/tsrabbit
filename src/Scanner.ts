@@ -250,11 +250,11 @@ export default class Scanner {
     const lineNumber = lines.length;
     const visibleChars = lines
       .slice(0, -1)
-      .reduce((prev, curr) => prev + curr.length, 0);
-    const column = this.start + 1 - (visibleChars + lineNumber);
+      .reduce((prev, curr) => prev + curr.length + 1, 0);
+    const column = this.start + 1 - visibleChars;
     return {
       number: lineNumber,
-      line: lines.at(-1) || '',
+      line: this.source.split('\n').at(lineNumber - 1) || '',
       column,
     };
   }

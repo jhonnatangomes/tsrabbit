@@ -56,7 +56,7 @@ function report(line: Line, where: string, message: string) {
   console.log(
     new Array(lineString.length)
       .fill('')
-      .map((_, i) => (i === column - 1 ? '^' : ''))
+      .map((_, i) => (i === column - 1 ? '^' : ' '))
       .join('')
       .padStart(lineString.length + 5 + number.toString().length)
   );
