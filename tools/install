@@ -8,8 +8,6 @@ async function main() {
   const dest = `${os.homedir()}/.tsrabbit`;
   console.log({ dest });
   const dirExists = fs.existsSync(dest);
-  console.log(fs.readdirSync(dest));
-  return;
   if (dirExists) {
     fs.rmSync(dest, { recursive: true, force: true });
   }

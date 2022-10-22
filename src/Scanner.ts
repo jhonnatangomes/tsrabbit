@@ -84,7 +84,7 @@ export default class Scanner {
       this.scanToken();
     }
 
-    this.tokens.push(new Token(EOF, '', this.lineObject(), 'null'));
+    this.tokens.push(new Token(EOF, '', this.lineObject(), null));
     return this.tokens;
   }
 
@@ -147,6 +147,7 @@ export default class Scanner {
       case ' ':
       case '\r':
       case '\t':
+      case '\n':
         break;
       case '"':
         this.string();
@@ -157,7 +158,7 @@ export default class Scanner {
         } else if (this.isAlpha(c)) {
           this.identifier();
         } else {
-          error(this.lineObject(), 'Unexpected character.');
+          error(this.lineObject(), `Unexpected character: ${c}`);
         }
         break;
     }
@@ -247,10 +248,10 @@ export default class Scanner {
   private lineObject(): Line {
     const lines = this.source.slice(0, this.start + 1).split('\n');
     const lineNumber = lines.length;
-    const column =
-      this.start +
-      1 -
-      lines.slice(0, -1).reduce((prev, curr) => prev + curr.length, 0);
+    const visibleChars = lines
+      .slice(0, -1)
+      .reduce((prev, curr) => prev + curr.length, 0);
+    const column = this.start + 1 - (visibleChars + lineNumber);
     return {
       number: lineNumber,
       line: lines.at(-1) || '',
