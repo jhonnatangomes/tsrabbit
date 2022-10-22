@@ -43,7 +43,6 @@ export enum TokenType {
   IF,
   NIL,
   OR,
-  PRINT,
   RETURN,
   SUPER,
   THIS,
