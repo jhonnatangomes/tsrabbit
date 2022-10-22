@@ -11,4 +11,14 @@ esbuild.build({
   minify: true,
   platform: 'node',
   outfile: destPath,
+  plugins: [
+    {
+      name: 'end',
+      setup: (build) => {
+        build.onEnd(() => {
+          exec(`chmod +x ${destPath}`);
+        });
+      },
+    },
+  ],
 });
