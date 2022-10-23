@@ -9,10 +9,11 @@ function main() {
   }
   const outputDir = args[0];
   defineAst(outputDir, 'Expr', [
-    'Binary   | left: Expr<R>, operator: Token, right: Expr<R>',
-    'Grouping | expression: Expr<R>',
-    'Literal  | value: Literal',
-    'Unary    | operator: Token, right: Expr<R>',
+    'Binary       | left: Expr, operator: Token, right: Expr',
+    'Grouping     | expression: Expr',
+    'Literal      | value: Literal',
+    'PrefixUnary  | operator: Token, right: Expr',
+    'PostfixUnary | left: Expr, operator: Token',
   ]);
 }
 
@@ -33,21 +34,21 @@ function defineVisitor(baseName, types) {
   let fileContent = `export interface Visitor<R> {\n`;
   types.forEach((type) => {
     const typeName = type.split('|')[0].trim();
-    fileContent += `  visit${typeName}${baseName}: (${baseName.toLowerCase()}: ${typeName}${baseName}<R>) => R;\n`;
+    fileContent += `  visit${typeName}${baseName}: <R>(${baseName.toLowerCase()}: ${typeName}${baseName}) => R;\n`;
   });
   fileContent += '}\n\n';
   return fileContent;
 }
 
 function defineAbstractClass(baseName) {
-  let fileContent = `abstract class ${baseName}<R> {\n`;
-  fileContent += `  abstract accept: (visitor: Visitor<R>) => R;\n`;
+  let fileContent = `export abstract class ${baseName} {\n`;
+  fileContent += `  abstract accept: <R>(visitor: Visitor<R>) => R;\n`;
   fileContent += '}\n\n';
   return fileContent;
 }
 
 function defineType(baseName, className, fieldList) {
-  let fileContent = `export class ${className}${baseName}<R> implements ${baseName}<R> {\n`;
+  let fileContent = `export class ${className}${baseName} implements ${baseName} {\n`;
   const fields = fieldList.split(', ');
   fields.forEach((field) => {
     fileContent += `  ${field};\n`;
@@ -59,7 +60,7 @@ function defineType(baseName, className, fieldList) {
     fileContent += `    this.${name} = ${name};\n`;
   });
   fileContent += '  }\n\n';
-  fileContent += `  accept(visitor: Visitor<R>): R {\n`;
+  fileContent += `  accept<R>(visitor: Visitor<R>): R {\n`;
   fileContent += `    return visitor.visit${className}${baseName}(this);\n`;
   fileContent += `  }\n`;
   fileContent += '}\n\n';

@@ -1,4 +1,4 @@
-import { error } from '.';
+import { lineError } from '.';
 import Token, { Line, Literal } from './Token';
 import { TokenType } from './TokenType';
 
@@ -158,7 +158,7 @@ export default class Scanner {
         } else if (this.isAlpha(c)) {
           this.identifier();
         } else {
-          error(this.lineObject(), `Unexpected character: ${c}`);
+          lineError(this.lineObject(), `Unexpected character: ${c}`);
         }
         break;
     }
@@ -213,7 +213,7 @@ export default class Scanner {
     }
 
     if (this.isAtEnd()) {
-      return error(this.lineObject(), 'Unterminated string.');
+      return lineError(this.lineObject(), 'Unterminated string.');
     }
 
     // The closing ".

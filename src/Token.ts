@@ -6,7 +6,7 @@ export type Line = {
   line: string;
 };
 
-export type Literal = string | number | null;
+export type Literal = string | number | boolean | null;
 
 export default class Token {
   type: TokenType;

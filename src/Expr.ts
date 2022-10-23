@@ -1,67 +1,82 @@
 import Token, { Literal } from './Token';
 
 export interface Visitor<R> {
-  visitBinaryExpr: (expr: BinaryExpr<R>) => R;
-  visitGroupingExpr: (expr: GroupingExpr<R>) => R;
-  visitLiteralExpr: (expr: LiteralExpr<R>) => R;
-  visitUnaryExpr: (expr: UnaryExpr<R>) => R;
+  visitBinaryExpr: <R>(expr: BinaryExpr) => R;
+  visitGroupingExpr: <R>(expr: GroupingExpr) => R;
+  visitLiteralExpr: <R>(expr: LiteralExpr) => R;
+  visitPrefixUnaryExpr: <R>(expr: PrefixUnaryExpr) => R;
+  visitPostfixUnaryExpr: <R>(expr: PostfixUnaryExpr) => R;
 }
 
-abstract class Expr<R> {
-  abstract accept: (visitor: Visitor<R>) => R;
+export abstract class Expr {
+  abstract accept: <R>(visitor: Visitor<R>) => R;
 }
 
-export class BinaryExpr<R> implements Expr<R> {
-  left: Expr<R>;
+export class BinaryExpr implements Expr {
+  left: Expr;
   operator: Token;
-  right: Expr<R>;
+  right: Expr;
 
-  constructor(left: Expr<R>, operator: Token, right: Expr<R>) {
+  constructor(left: Expr, operator: Token, right: Expr) {
     this.left = left;
     this.operator = operator;
     this.right = right;
   }
 
-  accept(visitor: Visitor<R>): R {
+  accept<R>(visitor: Visitor<R>): R {
     return visitor.visitBinaryExpr(this);
   }
 }
 
-export class GroupingExpr<R> implements Expr<R> {
-  expression: Expr<R>;
+export class GroupingExpr implements Expr {
+  expression: Expr;
 
-  constructor(expression: Expr<R>) {
+  constructor(expression: Expr) {
     this.expression = expression;
   }
 
-  accept(visitor: Visitor<R>): R {
+  accept<R>(visitor: Visitor<R>): R {
     return visitor.visitGroupingExpr(this);
   }
 }
 
-export class LiteralExpr<R> implements Expr<R> {
+export class LiteralExpr implements Expr {
   value: Literal;
 
   constructor(value: Literal) {
     this.value = value;
   }
 
-  accept(visitor: Visitor<R>): R {
+  accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLiteralExpr(this);
   }
 }
 
-export class UnaryExpr<R> implements Expr<R> {
+export class PrefixUnaryExpr implements Expr {
   operator: Token;
-  right: Expr<R>;
+  right: Expr;
 
-  constructor(operator: Token, right: Expr<R>) {
+  constructor(operator: Token, right: Expr) {
     this.operator = operator;
     this.right = right;
   }
 
-  accept(visitor: Visitor<R>): R {
-    return visitor.visitUnaryExpr(this);
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitPrefixUnaryExpr(this);
+  }
+}
+
+export class PostfixUnaryExpr implements Expr {
+  left: Expr;
+  operator: Token;
+
+  constructor(left: Expr, operator: Token) {
+    this.left = left;
+    this.operator = operator;
+  }
+
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitPostfixUnaryExpr(this);
   }
 }
 

@@ -9,15 +9,18 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-expression -> literal
-           | unary
-           | binary
-           | grouping ;
-literal    -> NUMBER | STRING | "true" | "false" | "nil" ;
-grouping   -> "(" expression ")" ;
-unary      -> ( "-" | "!" ) expression ;
+expression -> equality ;
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term       -> factor ( ( "-" | "+" ) factor )* ;
+factor     -> unary ( ( "/" | "*" ) unary )* ;
+unary      -> ( "-" | "!" | "++" | "--" ) unary
+           | unary ("++" | "--")
+           | primary ;
 binary     -> expression operator expression ;
 operator   -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" | "++" | "--" | "+=" | "-=" | "*=" | "/=";
+primary    -> NUMBER | STRING | "true" | "false" | "nil"
+           | "(" expression ")" ;
 ```
 
 ## Installation

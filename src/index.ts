@@ -1,8 +1,10 @@
 import fs from 'fs';
 import process from 'process';
 import readline from 'readline';
+import Parser from './Parser';
 import Scanner from './Scanner';
-import { Line } from './Token';
+import Token, { Line } from './Token';
+import { TokenType } from './TokenType';
 
 let hadError = false;
 
@@ -42,11 +44,22 @@ function runPrompt() {
 function run(source: string) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
+  const parser = new Parser(tokens);
+  const expression = parser.parse();
+  if (hadError) return;
   tokens.forEach((token) => console.log(token.toString()));
 }
 
-export function error(line: Line, message: string) {
+export function lineError(line: Line, message: string) {
   report(line, '', message);
+}
+
+export function tokenError(token: Token, message: string) {
+  if (token.type === TokenType.EOF) {
+    report(token.line, ' at end', message);
+  } else {
+    report(token.line, ` at '${token.lexeme}'`, message);
+  }
 }
 
 function report(line: Line, where: string, message: string) {
