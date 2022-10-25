@@ -1,5 +1,6 @@
 import { lineError } from '.';
-import Token, { Line, Literal } from './Token';
+import { lineObject } from './helpers';
+import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
 const {
@@ -84,7 +85,9 @@ export default class Scanner {
       this.scanToken();
     }
 
-    this.tokens.push(new Token(EOF, '', this.lineObject(), null));
+    this.tokens.push(
+      new Token(EOF, '', { start: this.start, end: this.current }, null)
+    );
     return this.tokens;
   }
 
@@ -158,7 +161,10 @@ export default class Scanner {
         } else if (this.isAlpha(c)) {
           this.identifier();
         } else {
-          lineError(this.lineObject(), `Unexpected character: ${c}`);
+          lineError(
+            lineObject(this.source, this.start),
+            `Unexpected character: ${c}`
+          );
         }
         break;
     }
@@ -213,7 +219,10 @@ export default class Scanner {
     }
 
     if (this.isAtEnd()) {
-      return lineError(this.lineObject(), 'Unterminated string.');
+      return lineError(
+        lineObject(this.source, this.start),
+        'Unterminated string.'
+      );
     }
 
     // The closing ".
@@ -242,21 +251,9 @@ export default class Scanner {
 
   private addToken(type: TokenType, literal?: Literal) {
     const text = this.source.substring(this.start, this.current);
-    this.tokens.push(new Token(type, text, this.lineObject(), literal));
-  }
-
-  private lineObject(): Line {
-    const lines = this.source.slice(0, this.start + 1).split('\n');
-    const lineNumber = lines.length;
-    const visibleChars = lines
-      .slice(0, -1)
-      .reduce((prev, curr) => prev + curr.length + 1, 0);
-    const column = this.start + 1 - visibleChars;
-    return {
-      number: lineNumber,
-      line: this.source.split('\n').at(lineNumber - 1) || '',
-      column,
-    };
+    this.tokens.push(
+      new Token(type, text, { start: this.start, end: this.current }, literal)
+    );
   }
 
   private isAtEnd() {

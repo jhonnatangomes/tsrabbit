@@ -1,11 +1,10 @@
 import Token, { Literal } from './Token';
 
 export interface Visitor<R> {
-  visitBinaryExpr: <R>(expr: BinaryExpr) => R;
-  visitGroupingExpr: <R>(expr: GroupingExpr) => R;
-  visitLiteralExpr: <R>(expr: LiteralExpr) => R;
-  visitPrefixUnaryExpr: <R>(expr: PrefixUnaryExpr) => R;
-  visitPostfixUnaryExpr: <R>(expr: PostfixUnaryExpr) => R;
+  visitBinaryExpr: (expr: BinaryExpr) => R;
+  visitGroupingExpr: (expr: GroupingExpr) => R;
+  visitLiteralExpr: (expr: LiteralExpr) => R;
+  visitUnaryExpr: (expr: UnaryExpr) => R;
 }
 
 export abstract class Expr {
@@ -52,7 +51,7 @@ export class LiteralExpr implements Expr {
   }
 }
 
-export class PrefixUnaryExpr implements Expr {
+export class UnaryExpr implements Expr {
   operator: Token;
   right: Expr;
 
@@ -62,21 +61,7 @@ export class PrefixUnaryExpr implements Expr {
   }
 
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitPrefixUnaryExpr(this);
-  }
-}
-
-export class PostfixUnaryExpr implements Expr {
-  left: Expr;
-  operator: Token;
-
-  constructor(left: Expr, operator: Token) {
-    this.left = left;
-    this.operator = operator;
-  }
-
-  accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitPostfixUnaryExpr(this);
+    return visitor.visitUnaryExpr(this);
   }
 }
 

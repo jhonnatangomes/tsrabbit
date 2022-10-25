@@ -12,8 +12,7 @@ function main() {
     'Binary       | left: Expr, operator: Token, right: Expr',
     'Grouping     | expression: Expr',
     'Literal      | value: Literal',
-    'PrefixUnary  | operator: Token, right: Expr',
-    'PostfixUnary | left: Expr, operator: Token',
+    'Unary        | operator: Token, right: Expr',
   ]);
 }
 
@@ -34,7 +33,7 @@ function defineVisitor(baseName, types) {
   let fileContent = `export interface Visitor<R> {\n`;
   types.forEach((type) => {
     const typeName = type.split('|')[0].trim();
-    fileContent += `  visit${typeName}${baseName}: <R>(${baseName.toLowerCase()}: ${typeName}${baseName}) => R;\n`;
+    fileContent += `  visit${typeName}${baseName}: (${baseName.toLowerCase()}: ${typeName}${baseName}) => R;\n`;
   });
   fileContent += '}\n\n';
   return fileContent;

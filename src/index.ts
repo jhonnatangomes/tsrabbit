@@ -1,12 +1,16 @@
 import fs from 'fs';
 import process from 'process';
 import readline from 'readline';
+import { Line, lineObject } from './helpers';
+import Interpreter from './Interpreter';
 import Parser from './Parser';
+import RuntimeError from './RuntimeError';
 import Scanner from './Scanner';
-import Token, { Line } from './Token';
+import Token from './Token';
 import { TokenType } from './TokenType';
 
 let hadError = false;
+let hadRuntimeError = false;
 
 function main() {
   const args = process.argv.slice(2);
@@ -24,6 +28,7 @@ function runFile(path: string) {
   const file = fs.readFileSync(path);
   run(file.toString());
   if (hadError) process.exit(65);
+  if (hadRuntimeError) process.exit(70);
 }
 
 function runPrompt() {
@@ -44,22 +49,32 @@ function runPrompt() {
 function run(source: string) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
-  const parser = new Parser(tokens);
+  const parser = new Parser(tokens, source);
   const expression = parser.parse();
   if (hadError) return;
-  tokens.forEach((token) => console.log(token.toString()));
+  const interpreter = new Interpreter(source);
+  //@ts-ignore
+  interpreter.interpret(expression);
+  // tokens.forEach((token) => console.log(token.toString()));
 }
 
 export function lineError(line: Line, message: string) {
   report(line, '', message);
 }
 
-export function tokenError(token: Token, message: string) {
+export function tokenError(token: Token, message: string, source: string) {
+  const line = lineObject(source, token.position.start);
   if (token.type === TokenType.EOF) {
-    report(token.line, ' at end', message);
+    report(line, ' at end', message);
   } else {
-    report(token.line, ` at '${token.lexeme}'`, message);
+    report(line, ` at '${token.lexeme}'`, message);
   }
+}
+
+export function runtimeError(error: RuntimeError, source: string) {
+  const line = lineObject(source, error.token.position.start);
+  report(line, ` at ${error.token.lexeme}`, error.message);
+  hadRuntimeError = true;
 }
 
 function report(line: Line, where: string, message: string) {

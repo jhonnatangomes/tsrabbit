@@ -1,9 +1,7 @@
 import { TokenType } from './TokenType';
-
-export type Line = {
-  number: number;
-  column: number;
-  line: string;
+type Position = {
+  start: number;
+  end: number;
 };
 
 export type Literal = string | number | boolean | null;
@@ -12,13 +10,18 @@ export default class Token {
   type: TokenType;
   lexeme: string;
   literal?: Literal;
-  line: Line;
+  position: Position;
 
-  constructor(type: TokenType, lexeme: string, line: Line, literal?: Literal) {
+  constructor(
+    type: TokenType,
+    lexeme: string,
+    position: Position,
+    literal?: Literal
+  ) {
     this.type = type;
     this.lexeme = lexeme;
     this.literal = literal;
-    this.line = line;
+    this.position = position;
   }
 
   toString() {

@@ -1,13 +1,6 @@
 import { tokenError } from '.';
 import { ParseError } from './Error';
-import {
-  BinaryExpr,
-  Expr,
-  GroupingExpr,
-  LiteralExpr,
-  PostfixUnaryExpr,
-  PrefixUnaryExpr,
-} from './Expr';
+import { BinaryExpr, Expr, GroupingExpr, LiteralExpr, UnaryExpr } from './Expr';
 import Token from './Token';
 import { TokenType } from './TokenType';
 
@@ -45,9 +38,11 @@ const {
 
 export default class Parser {
   tokens: Token[];
+  source: string;
   private current = 0;
-  constructor(tokens: Token[]) {
+  constructor(tokens: Token[], source: string) {
     this.tokens = tokens;
+    this.source = source;
   }
 
   parse() {
@@ -113,14 +108,9 @@ export default class Parser {
     if (this.match(MINUS, BANG, PLUS_PLUS, MINUS_MINUS)) {
       const operator = this.previous();
       const expr = this.unary();
-      return new PrefixUnaryExpr(operator, expr);
+      return new UnaryExpr(operator, expr);
     }
-    let expr = this.primary();
-    if (this.match(PLUS_PLUS, MINUS_MINUS)) {
-      const operator = this.previous();
-      expr = new PostfixUnaryExpr(expr, operator);
-    }
-    return expr;
+    return this.primary();
   }
 
   private primary(): Expr {
@@ -128,7 +118,7 @@ export default class Parser {
     if (this.match(TRUE)) return new LiteralExpr(true);
     if (this.match(NIL)) return new LiteralExpr(null);
     if (this.match(NUMBER, STRING))
-      return new LiteralExpr(this.previous().literal || null);
+      return new LiteralExpr(this.previous().literal ?? null);
     if (this.match(LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(RIGHT_PAREN, "Expect ')' after expression.");
@@ -164,7 +154,7 @@ export default class Parser {
   }
 
   private error(token: Token, message: string) {
-    tokenError(token, message);
+    tokenError(token, message, this.source);
     return new ParseError();
   }
 
