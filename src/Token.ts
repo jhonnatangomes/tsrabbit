@@ -1,10 +1,11 @@
+import { Callable } from './Callable';
 import { TokenType } from './TokenType';
 type Position = {
   start: number;
   end: number;
 };
 
-export type Literal = string | number | boolean | null;
+export type Literal = string | number | boolean | Callable | null;
 
 export default class Token {
   type: TokenType;

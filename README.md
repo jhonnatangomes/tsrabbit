@@ -9,17 +9,41 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-expression -> equality ;
-equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
-comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term       -> factor ( ( "-" | "+" ) factor )* ;
-factor     -> unary ( ( "/" | "*" ) unary )* ;
-unary      -> ( "-" | "!" ) unary
-           | primary ;
-binary     -> expression operator expression ;
-operator   -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
-primary    -> NUMBER | STRING | "true" | "false" | "nil"
-           | "(" expression ")" ;
+program     -> declaration* EOF ;
+declaration -> varDecl | statement;
+varDecl     -> "var" IDENTIFIER ("=" expression )? ";" ;
+statement   -> exprStmt
+            | ifStmt
+            | forStmt
+            | whileStmt
+            | block ;
+forStmt     -> "for" "(" ( varDecl | exprStmt | ; )
+            expression? ";"
+            expression? ")" statement ;
+whileStmt   -> "while" "(" expression ")" statement ;
+ifStmt      -> "if" "(" expression ")" statement
+            ("else" statement )? ;
+block       -> "{" declaration* "}" ;
+exprStmt    -> expression ";" ;
+expression  -> assignment;
+assignment  -> IDENTIFIER "=" assignment
+            | ternary;
+ternary     -> logic_or (? expression : expression)* ;
+logic_or    -> logic_and ( "||" logic_and )* ;
+logic_and   -> equality ( "&&" equality )* ;
+equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term        -> factor ( ( "-" | "+" ) factor )* ;
+factor      -> unary ( ( "/" | "*" ) unary )* ;
+unary       -> ( "-" | "!" ) unary
+            | call ;
+call        -> primary ( "(" arguments? ")" ) * ;
+arguments   -> expression ( "," expression ) *;
+binary      -> expression operator expression ;
+operator    -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
+primary     -> NUMBER | STRING | "true" | "false" | "nil"
+            | "(" expression ")"
+            | IDENTIFIER ;
 ```
 
 ## Installation

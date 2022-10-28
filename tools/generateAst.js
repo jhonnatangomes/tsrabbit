@@ -8,31 +8,53 @@ function main() {
     process.exit(64);
   }
   const outputDir = args[0];
-  defineAst(outputDir, 'Expr', [
-    'Binary       | left: Expr, operator: Token, right: Expr',
-    'Grouping     | expression: Expr',
-    'Literal      | value: Literal',
-    'Unary        | operator: Token, right: Expr',
-  ]);
+  defineAst(
+    outputDir,
+    'Expr',
+    [
+      'Assign       -> name: Token, value: Expr',
+      'Binary       -> left: Expr, operator: Token, right: Expr',
+      'Call         -> callee: Expr, paren: Token, args: Expr[]',
+      'Grouping     -> expression: Expr',
+      'Literal      -> value: Literal',
+      'Logical      -> left: Expr, operator: Token, right: Expr',
+      'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
+      'Unary        -> operator: Token, right: Expr',
+      'Variable     -> name: Token',
+    ],
+    ["import Token, { Literal } from './Token';"]
+  );
+  defineAst(
+    outputDir,
+    'Stmt',
+    [
+      'Block        -> statements: Stmt[]',
+      'Expression   -> expression: Expr',
+      'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
+      'While        -> condition: Expr, body: Stmt',
+      'Var          -> name: Token, initializer: Expr | null',
+    ],
+    ["import { Expr } from './Expr';", "import Token from './Token';"]
+  );
 }
 
-function defineAst(outputDir, baseName, types) {
+function defineAst(outputDir, baseName, types, importStatements) {
   const path = `${outputDir}/${baseName}.ts`;
-  let fileContent = "import Token, { Literal } from './Token';\n\n";
+  let fileContent = `${importStatements.join('\n')}\n\n`;
   fileContent += defineVisitor(baseName, types);
   fileContent += defineAbstractClass(baseName);
   types.forEach((type) => {
-    const className = type.split('|')[0].trim();
-    const fields = type.split('|')[1].trim();
+    const className = type.split('->')[0].trim();
+    const fields = type.split('->')[1].trim().replace('||', '|');
     fileContent += defineType(baseName, className, fields);
   });
   fs.writeFileSync(path, fileContent);
 }
 
 function defineVisitor(baseName, types) {
-  let fileContent = `export interface Visitor<R> {\n`;
+  let fileContent = `export interface ${baseName}Visitor<R> {\n`;
   types.forEach((type) => {
-    const typeName = type.split('|')[0].trim();
+    const typeName = type.split('->')[0].trim();
     fileContent += `  visit${typeName}${baseName}: (${baseName.toLowerCase()}: ${typeName}${baseName}) => R;\n`;
   });
   fileContent += '}\n\n';
@@ -41,7 +63,7 @@ function defineVisitor(baseName, types) {
 
 function defineAbstractClass(baseName) {
   let fileContent = `export abstract class ${baseName} {\n`;
-  fileContent += `  abstract accept: <R>(visitor: Visitor<R>) => R;\n`;
+  fileContent += `  abstract accept: <R>(visitor: ${baseName}Visitor<R>) => R;\n`;
   fileContent += '}\n\n';
   return fileContent;
 }
@@ -59,7 +81,7 @@ function defineType(baseName, className, fieldList) {
     fileContent += `    this.${name} = ${name};\n`;
   });
   fileContent += '  }\n\n';
-  fileContent += `  accept<R>(visitor: Visitor<R>): R {\n`;
+  fileContent += `  accept<R>(visitor: ${baseName}Visitor<R>): R {\n`;
   fileContent += `    return visitor.visit${className}${baseName}(this);\n`;
   fileContent += `  }\n`;
   fileContent += '}\n\n';

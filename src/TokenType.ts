@@ -11,6 +11,8 @@ export enum TokenType {
   SEMICOLON,
   SLASH,
   STAR,
+  QUESTION,
+  COLON,
 
   // One or two character tokens.
   BANG,
@@ -27,6 +29,8 @@ export enum TokenType {
   MINUS_EQUAL,
   STAR_EQUAL,
   SLASH_EQUAL,
+  PIPE_PIPE,
+  AMPERSAND_AMPERSAND,
 
   // Literals.
   IDENTIFIER,

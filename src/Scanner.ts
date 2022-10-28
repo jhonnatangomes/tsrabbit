@@ -1,4 +1,4 @@
-import { lineError } from '.';
+import { lineError, tokenError } from '.';
 import { lineObject } from './helpers';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
@@ -23,12 +23,6 @@ const {
   LESS_EQUAL,
   GREATER,
   GREATER_EQUAL,
-  PLUS_PLUS,
-  MINUS_MINUS,
-  PLUS_EQUAL,
-  MINUS_EQUAL,
-  STAR_EQUAL,
-  SLASH_EQUAL,
   SLASH,
   STRING,
   NUMBER,
@@ -49,6 +43,10 @@ const {
   VAR,
   WHILE,
   EXTENDS,
+  QUESTION,
+  COLON,
+  AMPERSAND_AMPERSAND,
+  PIPE_PIPE,
 } = TokenType;
 
 export default class Scanner {
@@ -113,20 +111,16 @@ export default class Scanner {
         this.addToken(DOT);
         break;
       case '-':
-        this.addToken(
-          this.match('-') ? MINUS_MINUS : this.match('=') ? MINUS_EQUAL : MINUS
-        );
+        this.addToken(MINUS);
         break;
       case '+':
-        this.addToken(
-          this.match('+') ? PLUS_PLUS : this.match('=') ? PLUS_EQUAL : PLUS
-        );
+        this.addToken(PLUS);
         break;
       case ';':
         this.addToken(SEMICOLON);
         break;
       case '*':
-        this.addToken(this.match('=') ? STAR_EQUAL : STAR);
+        this.addToken(STAR);
         break;
       case '!':
         this.addToken(this.match('=') ? BANG_EQUAL : BANG);
@@ -144,7 +138,27 @@ export default class Scanner {
         if (this.match('/')) {
           while (!this.match('\n') && !this.isAtEnd()) this.advance();
         } else {
-          this.addToken(this.match('=') ? SLASH_EQUAL : SLASH);
+          this.addToken(SLASH);
+        }
+        break;
+      case '?':
+        this.addToken(QUESTION);
+        break;
+      case ':':
+        this.addToken(COLON);
+        break;
+      case '&':
+        if (this.match('&')) {
+          this.addToken(AMPERSAND_AMPERSAND);
+        } else {
+          lineError(lineObject(this.source, this.start), `Expected another &.`);
+        }
+        break;
+      case '|':
+        if (this.match('|')) {
+          this.addToken(PIPE_PIPE);
+        } else {
+          lineError(lineObject(this.source, this.start), `Expected another |.`);
         }
         break;
       case ' ':

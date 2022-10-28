@@ -50,11 +50,11 @@ function run(source: string) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
   const parser = new Parser(tokens, source);
-  const expression = parser.parse();
+  const statements = parser.parse();
   if (hadError) return;
   const interpreter = new Interpreter(source);
   //@ts-ignore
-  interpreter.interpret(expression);
+  interpreter.interpret(statements);
   // tokens.forEach((token) => console.log(token.toString()));
 }
 

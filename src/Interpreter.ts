@@ -1,13 +1,31 @@
 import { runtimeError } from '.';
+import { Callable } from './Callable';
+import Environment from './Environment';
 import {
   BinaryExpr,
   Expr,
   GroupingExpr,
   LiteralExpr,
+  TernaryExpr,
   UnaryExpr,
-  Visitor,
+  ExprVisitor,
+  VariableExpr,
+  AssignExpr,
+  LogicalExpr,
+  CallExpr,
 } from './Expr';
+import Clock from './NativeFns/Clock';
+import Print from './NativeFns/Print';
 import RuntimeError from './RuntimeError';
+import {
+  BlockStmt,
+  ExpressionStmt,
+  IfStmt,
+  Stmt,
+  StmtVisitor,
+  VarStmt,
+  WhileStmt,
+} from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
@@ -23,22 +41,35 @@ const {
   EQUAL_EQUAL,
   PLUS,
   BANG,
+  PIPE_PIPE,
+  AMPERSAND_AMPERSAND,
 } = TokenType;
 
-export default class Interpreter implements Visitor<Literal> {
+export default class Interpreter
+  implements ExprVisitor<Literal>, StmtVisitor<void>
+{
   source: string;
+  globals = new Environment();
+  environment = this.globals;
 
   constructor(source: string) {
     this.source = source;
+    this.globals.define('clock', new Clock());
+    this.globals.define('print', new Print());
   }
 
-  interpret(expr: Expr) {
+  interpret(statements: Stmt[]) {
     try {
-      const value = this.evaluate(expr);
-      console.log(this.stringify(value));
+      statements.forEach((statement) => {
+        this.execute(statement);
+      });
     } catch (error) {
       runtimeError(error as RuntimeError, this.source);
     }
+  }
+
+  private execute(stmt: Stmt) {
+    stmt.accept(this);
   }
 
   private stringify(value: Literal) {
@@ -122,9 +153,97 @@ export default class Interpreter implements Visitor<Literal> {
     return null;
   }
 
+  visitTernaryExpr(expr: TernaryExpr): Literal {
+    const condition = this.evaluate(expr.condition);
+    if (this.isTruthy(condition)) {
+      return this.evaluate(expr.trueBranch);
+    }
+    return this.evaluate(expr.falseBranch);
+  }
+
+  visitExpressionStmt(stmt: ExpressionStmt): void {
+    this.evaluate(stmt.expression);
+  }
+
+  visitVarStmt(stmt: VarStmt): void {
+    let value = null;
+    if (stmt.initializer !== null) {
+      value = this.evaluate(stmt.initializer);
+    }
+
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
+  visitVariableExpr(expr: VariableExpr): Literal {
+    return this.environment.get(expr.name);
+  }
+
+  visitAssignExpr(expr: AssignExpr): Literal {
+    const value = this.evaluate(expr.value);
+    this.environment.assign(expr.name, value);
+    return value;
+  }
+
+  visitBlockStmt(stmt: BlockStmt): void {
+    this.executeBlock(stmt.statements, new Environment(this.environment));
+  }
+
+  visitIfStmt(stmt: IfStmt): void {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch !== null) {
+      this.execute(stmt.elseBranch);
+    }
+  }
+
+  visitLogicalExpr(expr: LogicalExpr): Literal {
+    const left = this.evaluate(expr.left);
+    if (expr.operator.type === PIPE_PIPE) {
+      if (this.isTruthy(left)) return left;
+    } else {
+      if (!this.isTruthy(left)) return left;
+    }
+    return this.evaluate(expr.right);
+  }
+
+  visitWhileStmt(stmt: WhileStmt): void {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.body);
+    }
+  }
+
+  visitCallExpr(expr: CallExpr): Literal {
+    const callee = this.evaluate(expr.callee);
+    const args: Literal[] = [];
+    expr.args.forEach((arg) => args.push(this.evaluate(arg)));
+    if (!(callee instanceof Callable)) {
+      throw new RuntimeError(
+        expr.paren,
+        'Can only call functions and classes.'
+      );
+    }
+    const func = callee as Callable;
+    if (func.arity() !== Infinity && args.length !== func.arity()) {
+      throw new RuntimeError(
+        expr.paren,
+        `Expected ${func.arity()} arguments but got ${args.length}.`
+      );
+    }
+    return func.call(this, args);
+  }
+
+  executeBlock(statements: Stmt[], environment: Environment) {
+    const previous = this.environment;
+    try {
+      this.environment = environment;
+      statements.forEach(this.execute);
+    } finally {
+      this.environment = previous;
+    }
+  }
+
   private isTruthy(value: Literal) {
-    if (value === null || value === false) return false;
-    return true;
+    return !!value;
   }
 
   private isEqual(a: Literal, b: Literal) {
