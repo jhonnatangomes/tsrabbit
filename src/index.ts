@@ -49,8 +49,12 @@ function runPrompt() {
 function run(source: string) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
+  // console.log({ tokens });
+  // return;
   const parser = new Parser(tokens, source);
   const statements = parser.parse();
+  // console.log(inspect(statements, { depth: null }));
+  // return;
   if (hadError) return;
   const interpreter = new Interpreter(source);
   //@ts-ignore

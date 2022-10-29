@@ -30,7 +30,9 @@ function main() {
     [
       'Block        -> statements: Stmt[]',
       'Expression   -> expression: Expr',
+      'Function     -> name: Token, params: Token[], body: Stmt[]',
       'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
+      'Return       -> keyword: Token, value: Expr | null',
       'While        -> condition: Expr, body: Stmt',
       'Var          -> name: Token, initializer: Expr | null',
     ],

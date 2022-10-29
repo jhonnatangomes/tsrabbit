@@ -14,7 +14,7 @@ export default class Environment {
   }
 
   get(name: Token): Literal {
-    if (this.values[name.lexeme]) {
+    if (this.values[name.lexeme] !== undefined) {
       return this.values[name.lexeme];
     }
     if (this.enclosing !== null) {

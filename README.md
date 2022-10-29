@@ -10,13 +10,18 @@ This space will be used to specify Rabbit's grammar. It will be updated as I wor
 
 ```
 program     -> declaration* EOF ;
-declaration -> varDecl | statement;
+declaration -> funDecl | varDecl | statement;
+funDecl     -> "fun" function ;
+function    -> IDENTIFIER "(" parameters? ")" block ;
+parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
 varDecl     -> "var" IDENTIFIER ("=" expression )? ";" ;
 statement   -> exprStmt
             | ifStmt
             | forStmt
+            | returnStmt
             | whileStmt
             | block ;
+returnStmt  -> "return" expression? ";" ;
 forStmt     -> "for" "(" ( varDecl | exprStmt | ; )
             expression? ";"
             expression? ")" statement ;

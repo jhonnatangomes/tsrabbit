@@ -15,7 +15,9 @@ import {
 import {
   BlockStmt,
   ExpressionStmt,
+  FunctionStmt,
   IfStmt,
+  ReturnStmt,
   Stmt,
   VarStmt,
   WhileStmt,
@@ -85,12 +87,31 @@ export default class Parser {
 
   private declaration() {
     try {
+      if (this.match(FUN)) return this.function();
       if (this.match(VAR)) return this.varDeclaration();
       return this.statement();
     } catch (error) {
       this.synchronize();
       return null;
     }
+  }
+
+  private function() {
+    const name = this.consume(IDENTIFIER, `Expect function name.`);
+    this.consume(LEFT_PAREN, `Expect '(' after function name.`);
+    const params: Token[] = [];
+    if (!this.check(RIGHT_PAREN)) {
+      do {
+        if (params.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 parameters.");
+        }
+        params.push(this.consume(IDENTIFIER, 'Expect parameter name.'));
+      } while (this.match(COMMA));
+    }
+    this.consume(RIGHT_PAREN, "Expect ')' after parameters.");
+    this.consume(LEFT_BRACE, "Expect '{' before function body");
+    const body = this.block();
+    return new FunctionStmt(name, params, body);
   }
 
   private varDeclaration() {
@@ -108,11 +129,22 @@ export default class Parser {
   private statement() {
     if (this.match(FOR)) return this.forStatement();
     if (this.match(IF)) return this.ifStatement();
+    if (this.match(RETURN)) return this.returnStatement();
     if (this.match(WHILE)) return this.whileStatement();
     if (this.match(LEFT_BRACE)) {
       return new BlockStmt(this.block());
     }
     return this.expressionStatement();
+  }
+
+  private returnStatement() {
+    const keyword = this.previous();
+    let value = null;
+    if (!this.check(SEMICOLON)) {
+      value = this.expression();
+    }
+    this.consume(SEMICOLON, "Expect ';' after return value.");
+    return new ReturnStmt(keyword, value);
   }
 
   private forStatement(): Stmt {

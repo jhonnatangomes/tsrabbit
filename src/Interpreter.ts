@@ -2,25 +2,29 @@ import { runtimeError } from '.';
 import { Callable } from './Callable';
 import Environment from './Environment';
 import {
+  AssignExpr,
   BinaryExpr,
+  CallExpr,
   Expr,
+  ExprVisitor,
   GroupingExpr,
   LiteralExpr,
+  LogicalExpr,
   TernaryExpr,
   UnaryExpr,
-  ExprVisitor,
   VariableExpr,
-  AssignExpr,
-  LogicalExpr,
-  CallExpr,
 } from './Expr';
 import Clock from './NativeFns/Clock';
 import Print from './NativeFns/Print';
+import RabbitFunction from './RabbitFunction';
+import Return from './Return';
 import RuntimeError from './RuntimeError';
 import {
   BlockStmt,
   ExpressionStmt,
+  FunctionStmt,
   IfStmt,
+  ReturnStmt,
   Stmt,
   StmtVisitor,
   VarStmt,
@@ -70,19 +74,6 @@ export default class Interpreter
 
   private execute(stmt: Stmt) {
     stmt.accept(this);
-  }
-
-  private stringify(value: Literal) {
-    if (value === null) return 'nil';
-    if (typeof value === 'number') {
-      const text = value.toString();
-      if (text.endsWith('.0')) {
-        return text.replace('.0', '');
-      }
-      return text;
-    }
-
-    return value;
   }
 
   private evaluate(expr: Expr) {
@@ -232,11 +223,24 @@ export default class Interpreter
     return func.call(this, args);
   }
 
+  visitFunctionStmt(stmt: FunctionStmt): void {
+    const func = new RabbitFunction(stmt, this.environment);
+    this.environment.define(stmt.name.lexeme, func);
+  }
+
+  visitReturnStmt(stmt: ReturnStmt): void {
+    let value = null;
+    if (stmt.value !== null) {
+      value = this.evaluate(stmt.value);
+    }
+    throw new Return(value);
+  }
+
   executeBlock(statements: Stmt[], environment: Environment) {
     const previous = this.environment;
     try {
       this.environment = environment;
-      statements.forEach(this.execute);
+      statements.forEach(this.execute.bind(this));
     } finally {
       this.environment = previous;
     }
