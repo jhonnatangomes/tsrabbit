@@ -16,6 +16,7 @@ import {
 } from './Expr';
 import Clock from './NativeFns/Clock';
 import Print from './NativeFns/Print';
+import Random from './NativeFns/Random';
 import RabbitFunction from './RabbitFunction';
 import Return from './Return';
 import RuntimeError from './RuntimeError';
@@ -60,6 +61,7 @@ export default class Interpreter
     this.source = source;
     this.globals.define('clock', new Clock());
     this.globals.define('print', new Print());
+    this.globals.define('random', new Random());
   }
 
   interpret(statements: Stmt[]) {
