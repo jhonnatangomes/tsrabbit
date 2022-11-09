@@ -1,98 +1,75 @@
 import fs from 'fs';
-import process from 'process';
-import readline from 'readline';
-import { Line, lineObject } from './helpers';
-import Interpreter from './Interpreter';
-import Parser from './Parser';
-import RuntimeError from './RuntimeError';
+import process, { stdin, stdout } from 'process';
+import { createInterface } from 'readline';
+import { inspect } from 'util';
+import { hadError, resetError } from './Error';
 import Scanner from './Scanner';
-import Token from './Token';
-import { TokenType } from './TokenType';
 
-let hadError = false;
-let hadRuntimeError = false;
+type Flag = typeof VALID_FLAGS[number];
+const VALID_FLAGS = ['--print-tokens'];
 
 function main() {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+  const flags = process.argv.slice(2).filter((arg) => arg.startsWith('--'));
   if (args.length > 1) {
-    console.log('Usage: tsrabbit [script]');
+    printUsageMessage();
     process.exit(64);
   } else if (args.length === 1) {
-    runFile(args[0]);
+    runFile(args[0], validFlags(flags));
   } else {
-    runPrompt();
+    runRepl(validFlags(flags));
   }
 }
 
-function runFile(path: string) {
-  const file = fs.readFileSync(path);
-  run(file.toString());
-  if (hadError) process.exit(65);
-  if (hadRuntimeError) process.exit(70);
+function validFlags(flags: string[]): Flag[] {
+  const invalidFlags = flags.filter((f) => !VALID_FLAGS.includes(f));
+  if (invalidFlags.length !== 0) {
+    for (const invalidFlag of invalidFlags) {
+      console.log(`Invalid flag: ${invalidFlag}`);
+    }
+    process.exit(65);
+  }
+  return flags.filter((f) => VALID_FLAGS.includes(f));
 }
 
-function runPrompt() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: '> ',
-  });
-  console.log('Welcome to TsRabbit version 0.0.0');
+function runFile(file: string, flags: Flag[]) {
+  const source = fs.readFileSync(file).toString();
+  run(source, flags);
+  if (hadError) process.exit(65);
+}
+
+function runRepl(flags: Flag[]) {
+  const rl = createInterface({ input: stdin, output: stdout, prompt: '>> ' });
+  console.log('Welcome to TsRabbit');
   rl.prompt();
   rl.on('line', (line) => {
-    run(line);
-    hadError = false;
+    run(line, flags);
+    resetError();
     rl.prompt();
   }).on('close', () => console.log('Thanks for using TsRabbit'));
 }
 
-function run(source: string) {
-  const scanner = new Scanner(source);
-  const tokens = scanner.scanTokens();
-  // console.log({ tokens });
-  // return;
-  const parser = new Parser(tokens, source);
-  const statements = parser.parse();
-  // console.log(inspect(statements, { depth: null }));
-  // return;
-  if (hadError) return;
-  const interpreter = new Interpreter(source);
-  //@ts-ignore
-  interpreter.interpret(statements);
-  // tokens.forEach((token) => console.log(token.toString()));
-}
-
-export function lineError(line: Line, message: string) {
-  report(line, '', message);
-}
-
-export function tokenError(token: Token, message: string, source: string) {
-  const line = lineObject(source, token.position.start);
-  if (token.type === TokenType.EOF) {
-    report(line, ' at end', message);
-  } else {
-    report(line, ` at '${token.lexeme}'`, message);
+function run(source: string, flags: Flag[]) {
+  if (flags.includes('--print-tokens')) {
+    const scanner = new Scanner(source);
+    const tokens = scanner.scanTokens();
+    return tokens.forEach((token) =>
+      console.log(inspect(token.toString(), { depth: null }))
+    );
   }
+  console.log(source);
 }
 
-export function runtimeError(error: RuntimeError, source: string) {
-  const line = lineObject(source, error.token.position.start);
-  report(line, ` at ${error.token.lexeme}`, error.message);
-  hadRuntimeError = true;
-}
+function printUsageMessage() {
+  console.log(`Usage: 
+  tsrabbit - open interactive console
+  tsrabbit script - interpret the given script
 
-function report(line: Line, where: string, message: string) {
-  const { number, column, line: lineString } = line;
-  console.log(`[line ${number}:${column}] Error${where}: ${message}`);
-  console.log(`  ${number} | ${lineString}`);
-  console.log(
-    new Array(lineString.length)
-      .fill('')
-      .map((_, i) => (i === column - 1 ? '^' : ' '))
-      .join('')
-      .padStart(lineString.length + 5 + number.toString().length)
-  );
-  hadError = true;
+  Flags:
+  flags need to be passed before the optional script
+
+  --print-tokens - print the tokens produced by the scanner
+  `);
 }
 
 main();

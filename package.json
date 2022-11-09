@@ -5,7 +5,7 @@
   "license": "MIT",
   "packageManager": "yarn@3.2.4",
   "scripts": {
-    "build": "yarn tsc -b tsconfig.json && yarn authScripts && tools/postbuild.js",
+    "build": "rm -rf bin && yarn tsc -b tsconfig.json && yarn authScripts && tools/postbuild.js",
     "authScripts": "chmod +x bin/index.js tools/**/*",
     "install-rabbit": "tools/install.js",
     "build-install": "yarn build && yarn install-rabbit"
