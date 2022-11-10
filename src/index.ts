@@ -6,6 +6,7 @@ import { hadError, hadRuntimeError, resetError } from './Error';
 import Interpreter from './Interpreter';
 import Parser from './Parser';
 import Scanner from './Scanner';
+import { Literal } from './Token';
 
 type Flag = typeof VALID_FLAGS[number];
 const VALID_FLAGS = ['--print-tokens', '--print-ast'];
@@ -46,29 +47,33 @@ function runRepl(flags: Flag[]) {
   console.log('Welcome to TsRabbit');
   rl.prompt();
   rl.on('line', (line) => {
-    run(line, flags);
+    run(line, flags, true);
     resetError();
     rl.prompt();
   }).on('close', () => console.log('Thanks for using TsRabbit'));
 }
 
-function run(source: string, flags: Flag[]) {
+function run(source: string, flags: Flag[], isRepl = false) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
-  const parser = new Parser(tokens, source);
-  const ast = parser.parse();
-  if (hadError || !ast) return;
-  const interpreter = new Interpreter(source);
-  const result = interpreter.interpret(ast);
   if (flags.includes('--print-tokens')) {
     return tokens.forEach((token) =>
       console.log(inspect(token.toString(), { depth: null }))
     );
   }
+  const parser = new Parser(tokens, source);
+  const statements = parser.parse();
+  if (!statements) return;
   if (flags.includes('--print-ast')) {
-    return console.log(inspect(ast.toString(), { depth: null }));
+    return console.log(inspect(statements.toString(), { depth: null }));
   }
-  console.log(result);
+  if (hadError) return;
+  const interpreter = new Interpreter(source);
+  const result = interpreter.interpret(statements);
+  if (hadRuntimeError) return;
+  if (isRepl) {
+    console.log(result?.[0]);
+  }
 }
 
 function printUsageMessage() {

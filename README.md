@@ -9,16 +9,25 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
+program        → declaration* EOF ;
+declaration    → varDecl
+               | statement ;
+statement      → exprStatement ;
+exprStatement  → expression ";" ;
 expression     → ternary ;
-ternary        → equality ( "?" equality ":" ternary ) * ;
+ternary        → equality ( "?" ternary ":" ternary ) * ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" ) unary )* ;
 unary          → ( "!" | "-" ) unary
                | primary ;
-primary        → NUMBER | STRING | "true" | "false" | "null"
+primary        → primitive
                | "(" expression ")" ;
+array          → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
+map            → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
+primitive      → NUMBER | STRING | true | false | null | array | map ;
+mapMem         → IDENTIFIER ":" primitive ;
 ```
 
 ## Installation
@@ -32,7 +41,7 @@ yarn
 yarn build
 ```
 
-After the build has succeeded, a `bin`directory will be created and you can run the interpreter via `bin/index.js`. You can also run the internal install-rabbit script via `yarn install-rabbit`. This will bundle the ts code into a single executable, place it under `~/.tsrabbit/tsrabbit` and give it executable permission.
+After the build has succeeded, a `bin` directory will be created and you can run the interpreter via `bin/index.js`. You can also run the internal install-rabbit script via `yarn install-rabbit`. This will bundle the ts code into a single executable, place it under `~/.tsrabbit/tsrabbit` and give it executable permission.
 
 In case you don't have yarn installed, you can install it with npm:
 

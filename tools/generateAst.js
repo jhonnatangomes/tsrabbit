@@ -24,20 +24,20 @@ function main() {
     ],
     ["import Token, { Literal } from './Token';"]
   );
-  // defineAst(
-  //   outputDir,
-  //   'Stmt',
-  //   [
-  //     'Block        -> statements: Stmt[]',
-  //     'Expression   -> expression: Expr',
-  //     'Function     -> name: Token, params: Token[], body: Stmt[]',
-  //     'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
-  //     'Return       -> keyword: Token, value: Expr | null',
-  //     'While        -> condition: Expr, body: Stmt',
-  //     'Var          -> name: Token, initializer: Expr | null',
-  //   ],
-  //   ["import { Expr } from './Expr';", "import Token from './Token';"]
-  // );
+  defineAst(
+    outputDir,
+    'Stmt',
+    [
+      // 'Block        -> statements: Stmt[]',
+      'Expression   -> expression: Expr',
+      // 'Function     -> name: Token, params: Token[], body: Stmt[]',
+      // 'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
+      // 'Return       -> keyword: Token, value: Expr | null',
+      // 'While        -> condition: Expr, body: Stmt',
+      // 'Var          -> name: Token, initializer: Expr | null',
+    ],
+    ["import { Expr } from './Expr';", "import Token from './Token';"]
+  );
 }
 
 function defineAst(outputDir, baseName, types, importStatements) {

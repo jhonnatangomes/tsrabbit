@@ -5,7 +5,13 @@ export type Position = {
   end: number;
 };
 
-export type Literal = string | number | boolean | null;
+export type Literal =
+  | string
+  | number
+  | unknown[]
+  | Record<string, unknown>
+  | boolean
+  | null;
 
 export default class Token {
   type: TokenType;

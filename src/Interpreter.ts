@@ -8,23 +8,32 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
+import { ExpressionStmt, Stmt, StmtVisitor } from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
-export default class Interpreter implements ExprVisitor<Literal> {
+export default class Interpreter
+  implements ExprVisitor<Literal>, StmtVisitor<Literal>
+{
   source: string;
+  isRepl: boolean;
 
-  constructor(source: string) {
+  constructor(source: string, isRepl = false) {
     this.source = source;
+    this.isRepl = isRepl;
   }
 
-  interpret = (expr: Expr) => {
+  interpret = (statements: Stmt[]) => {
     try {
-      return this.evaluate(expr);
+      return statements.map(this.execute);
     } catch (error) {
       runtimeError(error as RuntimeError, this.source);
       return null;
     }
+  };
+
+  private execute = (stmt: Stmt) => {
+    return stmt.accept(this);
   };
 
   private evaluate = (expr: Expr) => {
@@ -97,6 +106,10 @@ export default class Interpreter implements ExprVisitor<Literal> {
         return -Number(right);
     }
     return null;
+  };
+
+  visitExpressionStmt = (stmt: ExpressionStmt): Literal => {
+    return this.evaluate(stmt.expression);
   };
 
   //helpers

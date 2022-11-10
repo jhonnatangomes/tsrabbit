@@ -1,4 +1,5 @@
-import { ParseError, tokenError } from './Error';
+import { inspect } from 'util';
+import { lineError, lineObject, ParseError, tokenError } from './Error';
 import {
   BinaryExpr,
   Expr,
@@ -7,7 +8,8 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import Token from './Token';
+import { ExpressionStmt, Stmt } from './Stmt';
+import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
 export default class Parser {
@@ -21,14 +23,29 @@ export default class Parser {
   }
 
   parse = () => {
+    const statements: Stmt[] = [];
     try {
-      return this.expression();
+      while (!this.isAtEnd()) {
+        this.start = this.current;
+        statements.push(this.statement());
+      }
+      return statements;
     } catch (error) {
       return null;
     }
   };
 
   //productions
+  private statement = (): Stmt => {
+    return this.expressionStatement();
+  };
+
+  private expressionStatement = (): Stmt => {
+    const expr = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+    return new ExpressionStmt(expr);
+  };
+
   private expression = (): Expr => {
     return this.ternary();
   };
@@ -36,7 +53,7 @@ export default class Parser {
   private ternary = (): Expr => {
     const condition = this.equality();
     if (this.match(TokenType.QUESTION)) {
-      const trueBranch = this.equality();
+      const trueBranch = this.ternary();
       this.consume(
         TokenType.COLON,
         "Expect ':' after true branch of ternary expression."
@@ -104,6 +121,18 @@ export default class Parser {
   };
 
   private primary = (): Expr => {
+    if (this.match(TokenType.LEFT_PAREN)) {
+      const expression = this.expression();
+      this.consume(
+        TokenType.RIGHT_PAREN,
+        "Expect ')' closing group expression."
+      );
+      return new GroupingExpr(expression);
+    }
+    return this.primitive();
+  };
+
+  private primitive = (): LiteralExpr => {
     if (this.match(TokenType.NUMBER_LITERAL, TokenType.STRING_LITERAL)) {
       return new LiteralExpr(this.previous().literal);
     }
@@ -116,15 +145,74 @@ export default class Parser {
     if (this.match(TokenType.NULL)) {
       return new LiteralExpr(null);
     }
-    if (this.match(TokenType.LEFT_PAREN)) {
-      const expression = this.expression();
-      this.consume(
-        TokenType.RIGHT_PAREN,
-        "Expect ')' closing group expression."
-      );
-      return new GroupingExpr(expression);
-    }
+    if (this.match(TokenType.LEFT_BRACKET)) return this.array();
+    if (this.match(TokenType.LEFT_BRACE)) return this.map();
     throw this.error(this.peek(), 'Expect expression.');
+  };
+
+  private array = (): LiteralExpr => {
+    if (this.match(TokenType.RIGHT_BRACKET)) return new LiteralExpr([]);
+    const firstEl = this.primitive();
+    const arr = [];
+    arr.push(firstEl);
+    while (!this.match(TokenType.RIGHT_BRACKET) && !this.isAtEnd()) {
+      this.consume(
+        TokenType.COMMA,
+        "Expect ',' after element in array literal."
+      );
+      if (!this.match(TokenType.RIGHT_BRACKET)) {
+        const newEl = this.primitive();
+        const lastElType = this.getTypeFromLiteralExpr(arr.at(-1)!);
+        const newType = this.getTypeFromLiteralExpr(newEl);
+        if (newType !== lastElType) {
+          throw this.error(
+            this.peek(),
+            `Types of array elements are not equal: ${lastElType} and ${newType}`
+          );
+        }
+        arr.push(newEl);
+      }
+    }
+    if (this.isAtEnd() && this.previous().type !== TokenType.RIGHT_BRACKET) {
+      throw this.error(this.peek(), 'Unterminated array.');
+    }
+    return new LiteralExpr(arr.map((el) => el.value));
+  };
+
+  private map = (): LiteralExpr => {
+    if (this.match(TokenType.RIGHT_BRACE)) return new LiteralExpr({});
+    const firstEl = this.mapMember();
+    const maps = [];
+    maps.push(firstEl.value);
+    while (!this.match(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      this.consume(
+        TokenType.COMMA,
+        "Expect ',' after element in array literal."
+      );
+      if (!this.match(TokenType.RIGHT_BRACE)) {
+        const newEl = this.mapMember();
+        maps.push(newEl.value);
+      }
+    }
+    if (this.isAtEnd() && this.previous().type !== TokenType.RIGHT_BRACE) {
+      throw this.error(this.peek(), 'Unterminated map.');
+    }
+    return new LiteralExpr(
+      (maps as Record<string, unknown>[]).reduce(
+        (acc, curr) => ({ ...acc, ...curr }),
+        {}
+      )
+    );
+  };
+
+  private mapMember = (): LiteralExpr => {
+    const key = this.consume(
+      TokenType.IDENTIFIER,
+      'Expect key name in new element of map.'
+    );
+    this.consume(TokenType.COLON, "Expect ':' after key name in map element.");
+    const { value } = this.primitive();
+    return new LiteralExpr({ [key.lexeme]: value });
   };
 
   //helpers
@@ -144,7 +232,7 @@ export default class Parser {
   };
 
   private isAtEnd = () => {
-    return this.current >= this.tokens.length;
+    return this.peek().type >= TokenType.EOF;
   };
 
   private error = (token: Token, message: string) => {
@@ -168,6 +256,16 @@ export default class Parser {
   };
 
   //error handling
+  private getTypeFromLiteralExpr = (expr: LiteralExpr) => {
+    const { value } = expr;
+    if (value === null) return 'null';
+    if (typeof value === 'string') return 'string';
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'boolean') return 'boolean';
+    if (Array.isArray(value)) return 'array';
+    return 'map';
+  };
+
   private synchronize = () => {
     this.advance();
 
