@@ -2,11 +2,13 @@ import fs from 'fs';
 import process, { stdin, stdout } from 'process';
 import { createInterface } from 'readline';
 import { inspect } from 'util';
-import { hadError, resetError } from './Error';
+import { hadError, hadRuntimeError, resetError } from './Error';
+import Interpreter from './Interpreter';
+import Parser from './Parser';
 import Scanner from './Scanner';
 
 type Flag = typeof VALID_FLAGS[number];
-const VALID_FLAGS = ['--print-tokens'];
+const VALID_FLAGS = ['--print-tokens', '--print-ast'];
 
 function main() {
   const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -36,6 +38,7 @@ function runFile(file: string, flags: Flag[]) {
   const source = fs.readFileSync(file).toString();
   run(source, flags);
   if (hadError) process.exit(65);
+  if (hadRuntimeError) process.exit(70);
 }
 
 function runRepl(flags: Flag[]) {
@@ -50,14 +53,22 @@ function runRepl(flags: Flag[]) {
 }
 
 function run(source: string, flags: Flag[]) {
+  const scanner = new Scanner(source);
+  const tokens = scanner.scanTokens();
+  const parser = new Parser(tokens, source);
+  const ast = parser.parse();
+  if (hadError || !ast) return;
+  const interpreter = new Interpreter(source);
+  const result = interpreter.interpret(ast);
   if (flags.includes('--print-tokens')) {
-    const scanner = new Scanner(source);
-    const tokens = scanner.scanTokens();
     return tokens.forEach((token) =>
       console.log(inspect(token.toString(), { depth: null }))
     );
   }
-  console.log(source);
+  if (flags.includes('--print-ast')) {
+    return console.log(inspect(ast.toString(), { depth: null }));
+  }
+  console.log(result);
 }
 
 function printUsageMessage() {

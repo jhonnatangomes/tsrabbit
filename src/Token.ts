@@ -10,7 +10,7 @@ export type Literal = string | number | boolean | null;
 export default class Token {
   type: TokenType;
   lexeme: string;
-  literal: Literal | null;
+  literal: Literal;
   position: Position;
 
   constructor(

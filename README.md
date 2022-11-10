@@ -9,46 +9,16 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-program     -> declaration* EOF ;
-declaration -> funDecl | varDecl | statement;
-funDecl     -> "fun" function ;
-function    -> IDENTIFIER "(" parameters? ")" block ;
-parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
-varDecl     -> "var" IDENTIFIER ("=" expression )? ";" ;
-statement   -> exprStmt
-            | ifStmt
-            | forStmt
-            | returnStmt
-            | whileStmt
-            | block ;
-returnStmt  -> "return" expression? ";" ;
-forStmt     -> "for" "(" ( varDecl | exprStmt | ; )
-            expression? ";"
-            expression? ")" statement ;
-whileStmt   -> "while" "(" expression ")" statement ;
-ifStmt      -> "if" "(" expression ")" statement
-            ("else" statement )? ;
-block       -> "{" declaration* "}" ;
-exprStmt    -> expression ";" ;
-expression  -> assignment;
-assignment  -> IDENTIFIER "=" assignment
-            | ternary;
-ternary     -> logic_or (? expression : expression)* ;
-logic_or    -> logic_and ( "||" logic_and )* ;
-logic_and   -> equality ( "&&" equality )* ;
-equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
-comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term        -> factor ( ( "-" | "+" ) factor )* ;
-factor      -> unary ( ( "/" | "*" ) unary )* ;
-unary       -> ( "-" | "!" ) unary
-            | call ;
-call        -> primary ( "(" arguments? ")" ) * ;
-arguments   -> expression ( "," expression ) *;
-binary      -> expression operator expression ;
-operator    -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
-primary     -> NUMBER | STRING | "true" | "false" | "nil"
-            | "(" expression ")"
-            | IDENTIFIER ;
+expression     → ternary ;
+ternary        → equality ( "?" equality ":" ternary ) * ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               | primary ;
+primary        → NUMBER | STRING | "true" | "false" | "null"
+               | "(" expression ")" ;
 ```
 
 ## Installation

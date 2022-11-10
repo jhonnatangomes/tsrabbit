@@ -12,32 +12,32 @@ function main() {
     outputDir,
     'Expr',
     [
-      'Assign       -> name: Token, value: Expr',
+      // 'Assign       -> name: Token, value: Expr',
       'Binary       -> left: Expr, operator: Token, right: Expr',
-      'Call         -> callee: Expr, paren: Token, args: Expr[]',
+      // 'Call         -> callee: Expr, paren: Token, args: Expr[]',
       'Grouping     -> expression: Expr',
       'Literal      -> value: Literal',
-      'Logical      -> left: Expr, operator: Token, right: Expr',
+      // 'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
       'Unary        -> operator: Token, right: Expr',
-      'Variable     -> name: Token',
+      // 'Variable     -> name: Token',
     ],
     ["import Token, { Literal } from './Token';"]
   );
-  defineAst(
-    outputDir,
-    'Stmt',
-    [
-      'Block        -> statements: Stmt[]',
-      'Expression   -> expression: Expr',
-      'Function     -> name: Token, params: Token[], body: Stmt[]',
-      'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
-      'Return       -> keyword: Token, value: Expr | null',
-      'While        -> condition: Expr, body: Stmt',
-      'Var          -> name: Token, initializer: Expr | null',
-    ],
-    ["import { Expr } from './Expr';", "import Token from './Token';"]
-  );
+  // defineAst(
+  //   outputDir,
+  //   'Stmt',
+  //   [
+  //     'Block        -> statements: Stmt[]',
+  //     'Expression   -> expression: Expr',
+  //     'Function     -> name: Token, params: Token[], body: Stmt[]',
+  //     'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
+  //     'Return       -> keyword: Token, value: Expr | null',
+  //     'While        -> condition: Expr, body: Stmt',
+  //     'Var          -> name: Token, initializer: Expr | null',
+  //   ],
+  //   ["import { Expr } from './Expr';", "import Token from './Token';"]
+  // );
 }
 
 function defineAst(outputDir, baseName, types, importStatements) {
@@ -66,6 +66,7 @@ function defineVisitor(baseName, types) {
 function defineAbstractClass(baseName) {
   let fileContent = `export abstract class ${baseName} {\n`;
   fileContent += `  abstract accept: <R>(visitor: ${baseName}Visitor<R>) => R;\n`;
+  fileContent += `  abstract toString: () => Record<string, unknown>;\n`;
   fileContent += '}\n\n';
   return fileContent;
 }
@@ -73,18 +74,29 @@ function defineAbstractClass(baseName) {
 function defineType(baseName, className, fieldList) {
   let fileContent = `export class ${className}${baseName} implements ${baseName} {\n`;
   const fields = fieldList.split(', ');
+  const fieldNames = fields.map((field) => field.split(':')[0].trim());
   fields.forEach((field) => {
     fileContent += `  ${field};\n`;
   });
   fileContent += '\n';
   fileContent += `  constructor(${fieldList}) {\n`;
-  fields.forEach((field) => {
-    const name = field.split(':')[0].trim();
+  fieldNames.forEach((name) => {
     fileContent += `    this.${name} = ${name};\n`;
   });
   fileContent += '  }\n\n';
   fileContent += `  accept<R>(visitor: ${baseName}Visitor<R>): R {\n`;
   fileContent += `    return visitor.visit${className}${baseName}(this);\n`;
+  fileContent += `  }\n\n`;
+  fileContent += `  toString() {\n`;
+  fileContent += `    return {\n`;
+  fields.map((field) => {
+    const name = field.split(':')[0].trim();
+    const type = field.split(':')[1].trim();
+    fileContent += `      ${name}: this.${name}${
+      type !== 'Literal' ? '.toString()' : ''
+    },\n`;
+  });
+  fileContent += `    }\n`;
   fileContent += `  }\n`;
   fileContent += '}\n\n';
   return fileContent;

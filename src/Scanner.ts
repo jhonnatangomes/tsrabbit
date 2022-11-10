@@ -1,5 +1,5 @@
 import { lineError, lineObject } from './Error';
-import Token, { Literal, Position } from './Token';
+import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
 export default class Scanner {
