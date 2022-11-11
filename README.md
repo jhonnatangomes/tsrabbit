@@ -12,6 +12,7 @@ This space will be used to specify Rabbit's grammar. It will be updated as I wor
 program        → declaration* EOF ;
 declaration    → varDecl
                | statement ;
+varDecl        → type IDENTIFIER "=" expression  ";" ;
 statement      → exprStatement ;
 exprStatement  → expression ";" ;
 expression     → ternary ;
@@ -28,6 +29,8 @@ array          → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
 map            → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
 primitive      → NUMBER | STRING | true | false | null | array | map ;
 mapMem         → IDENTIFIER ":" primitive ;
+type           → typePrimitive "[]" ;
+typePrimitive  → "number" | "string" | "map" | "bool" | "void" ;
 ```
 
 ## Installation

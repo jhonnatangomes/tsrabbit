@@ -8,14 +8,14 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { ExpressionStmt, Stmt } from './Stmt';
+import { getLiteralType } from './helpers';
+import { ExpressionStmt, Stmt, VarStmt } from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
 export default class Parser {
   private tokens: Token[];
   private source: string;
-  private start = 0;
   private current = 0;
   constructor(tokens: Token[], source: string) {
     this.tokens = tokens;
@@ -24,18 +24,55 @@ export default class Parser {
 
   parse = () => {
     const statements: Stmt[] = [];
-    try {
-      while (!this.isAtEnd()) {
-        this.start = this.current;
-        statements.push(this.statement());
+    while (!this.isAtEnd()) {
+      const declaration = this.declaration();
+      if (declaration) {
+        statements.push(declaration);
       }
-      return statements;
+    }
+    return statements;
+  };
+
+  //productions
+  private declaration = (): Stmt | null => {
+    try {
+      if (this.match(TokenType.STRING, TokenType.NUMBER, TokenType.MAP))
+        return this.varDeclaration();
+      return this.statement();
     } catch (error) {
+      this.synchronize();
       return null;
     }
   };
 
-  //productions
+  private varDeclaration = (): Stmt => {
+    const type = this.type();
+    const name = this.consume(
+      TokenType.IDENTIFIER,
+      'Expect identifier in variable declaration'
+    );
+    const equal = this.consume(
+      TokenType.EQUAL,
+      "Expect '=' after identifier in variable declaration"
+    );
+    const expr = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration");
+    return new VarStmt(type, name, expr, equal);
+  };
+
+  private type = (): string => {
+    const typePrimitive = this.previous();
+    let isArray = false;
+    if (this.match(TokenType.LEFT_BRACKET)) {
+      this.consume(
+        TokenType.RIGHT_BRACKET,
+        "Expect ']' after opening '[' in array type declaration"
+      );
+      isArray = true;
+    }
+    return typePrimitive.lexeme + (isArray ? '[]' : '');
+  };
+
   private statement = (): Stmt => {
     return this.expressionStatement();
   };
@@ -160,13 +197,13 @@ export default class Parser {
         TokenType.COMMA,
         "Expect ',' after element in array literal."
       );
-      if (!this.match(TokenType.RIGHT_BRACKET)) {
+      if (this.peek().type !== TokenType.RIGHT_BRACKET) {
         const newEl = this.primitive();
-        const lastElType = this.getTypeFromLiteralExpr(arr.at(-1)!);
-        const newType = this.getTypeFromLiteralExpr(newEl);
+        const lastElType = getLiteralType(arr.at(-1)!.value);
+        const newType = getLiteralType(newEl.value);
         if (newType !== lastElType) {
           throw this.error(
-            this.peek(),
+            this.previous(),
             `Types of array elements are not equal: ${lastElType} and ${newType}`
           );
         }
@@ -189,7 +226,7 @@ export default class Parser {
         TokenType.COMMA,
         "Expect ',' after element in array literal."
       );
-      if (!this.match(TokenType.RIGHT_BRACE)) {
+      if (this.peek().type !== TokenType.RIGHT_BRACE) {
         const newEl = this.mapMember();
         maps.push(newEl.value);
       }
@@ -255,16 +292,11 @@ export default class Parser {
     return this.tokens[this.current - 1];
   };
 
-  //error handling
-  private getTypeFromLiteralExpr = (expr: LiteralExpr) => {
-    const { value } = expr;
-    if (value === null) return 'null';
-    if (typeof value === 'string') return 'string';
-    if (typeof value === 'number') return 'number';
-    if (typeof value === 'boolean') return 'boolean';
-    if (Array.isArray(value)) return 'array';
-    return 'map';
+  private typeKeywords = () => {
+    return [TokenType.NUMBER, TokenType.STRING, TokenType.MAP];
   };
+
+  //error handling
 
   private synchronize = () => {
     this.advance();

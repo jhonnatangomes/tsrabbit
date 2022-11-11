@@ -2,6 +2,7 @@ import fs from 'fs';
 import process, { stdin, stdout } from 'process';
 import { createInterface } from 'readline';
 import { inspect } from 'util';
+import Environment from './Environment';
 import { hadError, hadRuntimeError, resetError } from './Error';
 import Interpreter from './Interpreter';
 import Parser from './Parser';
@@ -44,16 +45,22 @@ function runFile(file: string, flags: Flag[]) {
 
 function runRepl(flags: Flag[]) {
   const rl = createInterface({ input: stdin, output: stdout, prompt: '>> ' });
+  const environment = new Environment();
   console.log('Welcome to TsRabbit');
   rl.prompt();
   rl.on('line', (line) => {
-    run(line, flags, true);
+    run(line, flags, true, environment);
     resetError();
     rl.prompt();
   }).on('close', () => console.log('Thanks for using TsRabbit'));
 }
 
-function run(source: string, flags: Flag[], isRepl = false) {
+function run(
+  source: string,
+  flags: Flag[],
+  isRepl = false,
+  environment?: Environment
+) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
   if (flags.includes('--print-tokens')) {
@@ -65,10 +72,15 @@ function run(source: string, flags: Flag[], isRepl = false) {
   const statements = parser.parse();
   if (!statements) return;
   if (flags.includes('--print-ast')) {
-    return console.log(inspect(statements.toString(), { depth: null }));
+    return console.log(
+      inspect(
+        statements.map((stmt) => stmt.toString()),
+        { depth: null }
+      )
+    );
   }
   if (hadError) return;
-  const interpreter = new Interpreter(source);
+  const interpreter = new Interpreter(source, environment || new Environment());
   const result = interpreter.interpret(statements);
   if (hadRuntimeError) return;
   if (isRepl) {

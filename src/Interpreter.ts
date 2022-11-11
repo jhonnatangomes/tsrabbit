@@ -1,3 +1,4 @@
+import Environment from './Environment';
 import { RuntimeError, runtimeError } from './Error';
 import {
   BinaryExpr,
@@ -8,7 +9,8 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { ExpressionStmt, Stmt, StmtVisitor } from './Stmt';
+import { getLiteralType } from './helpers';
+import { ExpressionStmt, Stmt, StmtVisitor, VarStmt } from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
@@ -16,11 +18,13 @@ export default class Interpreter
   implements ExprVisitor<Literal>, StmtVisitor<Literal>
 {
   source: string;
-  isRepl: boolean;
+  globals: Environment;
+  environment: Environment;
 
-  constructor(source: string, isRepl = false) {
+  constructor(source: string, globalEnv: Environment) {
     this.source = source;
-    this.isRepl = isRepl;
+    this.globals = globalEnv;
+    this.environment = this.globals;
   }
 
   interpret = (statements: Stmt[]) => {
@@ -110,6 +114,18 @@ export default class Interpreter
 
   visitExpressionStmt = (stmt: ExpressionStmt): Literal => {
     return this.evaluate(stmt.expression);
+  };
+  visitVarStmt = (stmt: VarStmt): Literal => {
+    const initializer = this.evaluate(stmt.initializer);
+    const initializerType = getLiteralType(initializer);
+    if (initializerType !== stmt.type) {
+      throw new RuntimeError(
+        stmt.equalToken,
+        `Tried to assign type ${initializerType} to ${stmt.type}`
+      );
+    }
+    this.environment.define(stmt.name, initializer, initializerType);
+    return null;
   };
 
   //helpers
