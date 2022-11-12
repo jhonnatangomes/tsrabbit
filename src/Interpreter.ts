@@ -9,6 +9,7 @@ import {
   LogicalExpr,
   TernaryExpr,
   UnaryExpr,
+  VariableExpr,
 } from './Expr';
 import { getLiteralType } from './helpers';
 import { ExpressionStmt, Stmt, StmtVisitor, TypeStmt, VarStmt } from './Stmt';
@@ -120,6 +121,10 @@ export default class Interpreter
         return -Number(right);
     }
     return null;
+  };
+  visitVariableExpr = (expr: VariableExpr): Literal => {
+    const { name } = expr;
+    return this.environment.get(name).literal;
   };
 
   visitExpressionStmt = (stmt: ExpressionStmt): Literal => {

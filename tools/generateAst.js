@@ -20,7 +20,7 @@ function main() {
       'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
       'Unary        -> operator: Token, right: Expr',
-      // 'Variable     -> name: Token',
+      'Variable     -> name: Token',
     ],
     ["import Token, { Literal } from './Token';"]
   );

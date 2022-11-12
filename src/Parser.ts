@@ -7,6 +7,7 @@ import {
   LogicalExpr,
   TernaryExpr,
   UnaryExpr,
+  VariableExpr,
 } from './Expr';
 import { typeKeywords } from './helpers';
 import { ExpressionStmt, Stmt, TypeStmt, VarStmt } from './Stmt';
@@ -222,6 +223,9 @@ export default class Parser {
         "Expect ')' closing group expression."
       );
       return new GroupingExpr(expression);
+    }
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new VariableExpr(this.previous());
     }
     return this.primitive();
   };

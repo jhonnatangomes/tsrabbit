@@ -68,7 +68,7 @@ export default class Environment {
     throw new RuntimeError(equalToken, `Type ${type} is not defined`);
   }
 
-  get(name: Token): Literal {
+  get(name: Token): { literal: Literal; type: string } {
     if (this.values[name.lexeme] !== undefined) {
       return this.values[name.lexeme];
     }

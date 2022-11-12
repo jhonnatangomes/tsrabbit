@@ -7,6 +7,7 @@ export interface ExprVisitor<R> {
   visitLogicalExpr: (expr: LogicalExpr) => R;
   visitTernaryExpr: (expr: TernaryExpr) => R;
   visitUnaryExpr: (expr: UnaryExpr) => R;
+  visitVariableExpr: (expr: VariableExpr) => R;
 }
 
 export abstract class Expr {
@@ -139,6 +140,24 @@ export class UnaryExpr implements Expr {
     return {
       operator: this.operator.toString(),
       right: this.right.toString(),
+    }
+  }
+}
+
+export class VariableExpr implements Expr {
+  name: Token;
+
+  constructor(name: Token) {
+    this.name = name;
+  }
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitVariableExpr(this);
+  }
+
+  toString() {
+    return {
+      name: this.name.toString(),
     }
   }
 }

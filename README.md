@@ -29,7 +29,8 @@ factor          → unary ( ( "/" | "*" ) unary )* ;
 unary           → ( "!" | "-" ) unary
                 | primary ;
 primary         → primitive
-                | "(" expression ")" ;
+                | "(" expression ")"
+                | IDENTIFIER ;
 array           → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
 map             → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
 primitive       → NUMBER | STRING | true | false | null | array | map ;
