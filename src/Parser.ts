@@ -66,7 +66,7 @@ export default class Parser {
       (this.peek().type === TokenType.IDENTIFIER ||
         typeKeywords().includes(this.peek().type)) &&
       (this.peekNext().type === TokenType.IDENTIFIER ||
-        this.peekNext().type === TokenType.RIGHT_BRACKET)
+        this.peekNext().type === TokenType.LEFT_BRACKET)
     ) {
       return this.varDeclaration();
     }

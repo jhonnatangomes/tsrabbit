@@ -10,7 +10,7 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { getLiteralType, getTypesFromUnion } from './helpers';
+import { getLiteralType } from './helpers';
 import { ExpressionStmt, Stmt, StmtVisitor, TypeStmt, VarStmt } from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
@@ -127,6 +127,7 @@ export default class Interpreter
   };
 
   visitTypeStmt = (stmt: TypeStmt): Literal => {
+    this.globals.assertType(stmt.name, stmt.type);
     this.environment.defineType(stmt.name, stmt.type);
     return null;
   };

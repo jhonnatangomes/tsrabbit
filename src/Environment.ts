@@ -23,6 +23,13 @@ export default class Environment {
         `Variable ${name.lexeme} is already declared. You might have attempted to reassign it.`
       );
     }
+    const globalEnv = this.getGlobalEnvironment();
+    if (Object.keys(globalEnv).includes(name.lexeme)) {
+      throw new RuntimeError(
+        name,
+        `A type with the same name is already defined.`
+      );
+    }
     this.values[name.lexeme] = { literal: value, type };
   }
 
@@ -30,21 +37,27 @@ export default class Environment {
     if (this.types[name.lexeme] !== undefined) {
       throw new RuntimeError(name, `Type ${name} is already declared.`);
     }
+    if (Object.keys(this.values).includes(type)) {
+      throw new RuntimeError(
+        name,
+        `A variable with the same name is already declared`
+      );
+    }
     this.types[name.lexeme] = getTypesFromUnion(type);
   }
 
   getType(name: Token, type: string): string[] {
     const simpleTypes = Object.keys(this.types);
     if (simpleTypes.includes(type)) return this.types[type];
-    const arrayRegex = new RegExp(`^(?:${simpleTypes.join('|')})((?:\[\])+)$`);
+    const arrayRegex = new RegExp(`^(${simpleTypes.join('|')})((?:\\[\\])+)$`);
     const arrayMatch = type.match(arrayRegex);
     if (arrayMatch) {
-      return this.types[type].map((t) => t + arrayMatch[0]);
+      return this.types[arrayMatch[1]].map((t) => t + arrayMatch[2]);
     }
     const mapRegex = /^map\[(.*)\]$/;
     const mapMatch = type.match(mapRegex);
     if (mapMatch) {
-      return this.getType(name, mapMatch[0]).map((t) => `map[${t}]`);
+      return this.getType(name, mapMatch[1]).map((t) => `map[${t}]`);
     }
     throw new RuntimeError(name, `Type ${type} is not defined`);
   }
@@ -65,15 +78,20 @@ export default class Environment {
   }
 
   //helpers
+  private getGlobalEnvironment = (): Environment => {
+    if (this.enclosing !== null) return this.getGlobalEnvironment();
+    return this;
+  };
+
   private isValidType = (type: string): boolean => {
     const simpleTypes = Object.keys(this.types);
     if (simpleTypes.includes(type)) return true;
-    const arrayRegex = new RegExp(`^(${simpleTypes.join('|')})(\[\])+$`);
+    const arrayRegex = new RegExp(`^(${simpleTypes.join('|')})(\\[\\])+$`);
     if (type.match(arrayRegex)) return true;
     const mapRegex = /^map\[(.*)\]$/;
     const mapMatch = type.match(mapRegex);
     if (mapMatch) {
-      return this.isValidType(mapMatch[0]);
+      return this.isValidType(mapMatch[1]);
     }
     return false;
   };
