@@ -17,7 +17,7 @@ function main() {
       // 'Call         -> callee: Expr, paren: Token, args: Expr[]',
       'Grouping     -> expression: Expr',
       'Literal      -> value: Literal',
-      // 'Logical      -> left: Expr, operator: Token, right: Expr',
+      'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
       'Unary        -> operator: Token, right: Expr',
       // 'Variable     -> name: Token',

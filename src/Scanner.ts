@@ -8,6 +8,7 @@ export default class Scanner {
   private start = 0;
   private current = 0;
   private keywords: Record<string, TokenType> = {
+    boolean: TokenType.BOOLEAN,
     class: TokenType.CLASS,
     else: TokenType.ELSE,
     extends: TokenType.EXTENDS,
@@ -22,6 +23,8 @@ export default class Scanner {
     super: TokenType.SUPER,
     this: TokenType.THIS,
     true: TokenType.TRUE,
+    type: TokenType.TYPE,
+    void: TokenType.VOID,
     while: TokenType.WHILE,
   };
 
@@ -130,14 +133,7 @@ export default class Scanner {
         this.addToken(this.match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
         break;
       case '|':
-        if (this.match('|')) {
-          this.addToken(TokenType.OR);
-        } else {
-          lineError(
-            lineObject(this.source, this.start),
-            `Unexpected character: ${c}`
-          );
-        }
+        this.addToken(this.match('|') ? TokenType.OR : TokenType.TYPE_OR);
         break;
       case '&':
         if (this.match('&')) {

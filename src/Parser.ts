@@ -1,16 +1,15 @@
-import { inspect } from 'util';
-import { lineError, lineObject, ParseError, tokenError } from './Error';
+import { ParseError, tokenError } from './Error';
 import {
   BinaryExpr,
   Expr,
   GroupingExpr,
   LiteralExpr,
+  LogicalExpr,
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { getLiteralType } from './helpers';
 import { ExpressionStmt, Stmt, VarStmt } from './Stmt';
-import Token, { Literal } from './Token';
+import Token from './Token';
 import { TokenType } from './TokenType';
 
 export default class Parser {
@@ -36,7 +35,7 @@ export default class Parser {
   //productions
   private declaration = (): Stmt | null => {
     try {
-      if (this.match(TokenType.STRING, TokenType.NUMBER, TokenType.MAP))
+      if (this.typeKeywords().includes(this.peek().type))
         return this.varDeclaration();
       return this.statement();
     } catch (error) {
@@ -61,16 +60,25 @@ export default class Parser {
   };
 
   private type = (): string => {
-    const typePrimitive = this.previous();
-    let isArray = false;
-    if (this.match(TokenType.LEFT_BRACKET)) {
+    const typePrimitiveToken = this.advance();
+    let { lexeme: typePrimitive } = typePrimitiveToken;
+    while (this.match(TokenType.LEFT_BRACKET)) {
+      if (this.peek().type !== TokenType.RIGHT_BRACKET) {
+        const mapType = this.type();
+        this.consume(
+          TokenType.RIGHT_BRACKET,
+          "Expect ']' after opening '[' in map type declaration"
+        );
+        typePrimitive += `[${mapType}]`;
+        break;
+      }
       this.consume(
         TokenType.RIGHT_BRACKET,
         "Expect ']' after opening '[' in array type declaration"
       );
-      isArray = true;
+      typePrimitive += '[]';
     }
-    return typePrimitive.lexeme + (isArray ? '[]' : '');
+    return typePrimitive;
   };
 
   private statement = (): Stmt => {
@@ -88,7 +96,7 @@ export default class Parser {
   };
 
   private ternary = (): Expr => {
-    const condition = this.equality();
+    const condition = this.or();
     if (this.match(TokenType.QUESTION)) {
       const trueBranch = this.ternary();
       this.consume(
@@ -99,6 +107,26 @@ export default class Parser {
       return new TernaryExpr(condition, trueBranch, falseBranch);
     }
     return condition;
+  };
+
+  private or = (): Expr => {
+    const left = this.and();
+    if (this.match(TokenType.OR)) {
+      const operator = this.previous();
+      const right = this.and();
+      return new LogicalExpr(left, operator, right);
+    }
+    return left;
+  };
+
+  private and = (): Expr => {
+    const left = this.equality();
+    if (this.match(TokenType.AND)) {
+      const operator = this.previous();
+      const right = this.equality();
+      return new LogicalExpr(left, operator, right);
+    }
+    return left;
   };
 
   private equality = (): Expr => {
@@ -199,18 +227,10 @@ export default class Parser {
       );
       if (this.peek().type !== TokenType.RIGHT_BRACKET) {
         const newEl = this.primitive();
-        const lastElType = getLiteralType(arr.at(-1)!.value);
-        const newType = getLiteralType(newEl.value);
-        if (newType !== lastElType) {
-          throw this.error(
-            this.previous(),
-            `Types of array elements are not equal: ${lastElType} and ${newType}`
-          );
-        }
         arr.push(newEl);
       }
     }
-    if (this.isAtEnd() && this.previous().type !== TokenType.RIGHT_BRACKET) {
+    if (this.isAtEnd()) {
       throw this.error(this.peek(), 'Unterminated array.');
     }
     return new LiteralExpr(arr.map((el) => el.value));
@@ -231,7 +251,7 @@ export default class Parser {
         maps.push(newEl.value);
       }
     }
-    if (this.isAtEnd() && this.previous().type !== TokenType.RIGHT_BRACE) {
+    if (this.isAtEnd()) {
       throw this.error(this.peek(), 'Unterminated map.');
     }
     return new LiteralExpr(
@@ -293,7 +313,13 @@ export default class Parser {
   };
 
   private typeKeywords = () => {
-    return [TokenType.NUMBER, TokenType.STRING, TokenType.MAP];
+    return [
+      TokenType.NUMBER,
+      TokenType.STRING,
+      TokenType.MAP,
+      TokenType.BOOLEAN,
+      TokenType.VOID,
+    ];
   };
 
   //error handling

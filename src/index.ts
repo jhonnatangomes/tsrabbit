@@ -64,7 +64,7 @@ function run(
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
   if (flags.includes('--print-tokens')) {
-    return tokens.forEach((token) =>
+    tokens.forEach((token) =>
       console.log(inspect(token.toString(), { depth: null }))
     );
   }
@@ -72,7 +72,7 @@ function run(
   const statements = parser.parse();
   if (!statements) return;
   if (flags.includes('--print-ast')) {
-    return console.log(
+    console.log(
       inspect(
         statements.map((stmt) => stmt.toString()),
         { depth: null }
@@ -82,9 +82,9 @@ function run(
   if (hadError) return;
   const interpreter = new Interpreter(source, environment || new Environment());
   const result = interpreter.interpret(statements);
-  if (hadRuntimeError) return;
+  if (hadRuntimeError && !isRepl) return;
   if (isRepl) {
-    console.log(result?.[0]);
+    console.log(result ? result[0] : null);
   }
 }
 

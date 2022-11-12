@@ -16,7 +16,9 @@ varDecl        → type IDENTIFIER "=" expression  ";" ;
 statement      → exprStatement ;
 exprStatement  → expression ";" ;
 expression     → ternary ;
-ternary        → equality ( "?" ternary ":" ternary ) * ;
+ternary        → logic_or ( "?" ternary ":" ternary ) * ;
+logic_or       → logic_and ( "||" logic_and ) * ;
+logic_and      → equality ( "&&" equality ) * ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
@@ -29,7 +31,7 @@ array          → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
 map            → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
 primitive      → NUMBER | STRING | true | false | null | array | map ;
 mapMem         → IDENTIFIER ":" primitive ;
-type           → typePrimitive "[]" ;
+type           → typePrimitive ( ( "[]" ) | "[" type "]" )* ;
 typePrimitive  → "number" | "string" | "map" | "bool" | "void" ;
 ```
 

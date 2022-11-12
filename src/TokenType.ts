@@ -11,6 +11,7 @@ export enum TokenType {
   QUESTION,
   COLON,
   SEMICOLON,
+  TYPE_OR,
 
   // One or two character tokens.
   PLUS,
@@ -41,6 +42,7 @@ export enum TokenType {
   NUMBER_LITERAL,
 
   // Keywords.
+  BOOLEAN,
   CLASS,
   ELSE,
   EXTENDS,
@@ -55,6 +57,8 @@ export enum TokenType {
   SUPER,
   THIS,
   TRUE,
+  TYPE,
+  VOID,
   WHILE,
 
   EOF,

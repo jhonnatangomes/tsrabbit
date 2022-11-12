@@ -6,6 +6,7 @@ import {
   ExprVisitor,
   GroupingExpr,
   LiteralExpr,
+  LogicalExpr,
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
@@ -91,6 +92,15 @@ export default class Interpreter
   visitLiteralExpr = (expr: LiteralExpr): Literal => {
     return expr.value;
   };
+  visitLogicalExpr = (expr: LogicalExpr): Literal => {
+    const left = this.evaluate(expr.left);
+    if (expr.operator.type === TokenType.OR) {
+      if (this.isTruthy(left)) return left;
+    } else {
+      if (!this.isTruthy(left)) return left;
+    }
+    return this.evaluate(expr.right);
+  };
   visitGroupingExpr = (expr: GroupingExpr): Literal => {
     return this.evaluate(expr.expression);
   };
@@ -117,7 +127,7 @@ export default class Interpreter
   };
   visitVarStmt = (stmt: VarStmt): Literal => {
     const initializer = this.evaluate(stmt.initializer);
-    const initializerType = getLiteralType(initializer);
+    const initializerType = getLiteralType(initializer, stmt.equalToken);
     if (initializerType !== stmt.type) {
       throw new RuntimeError(
         stmt.equalToken,

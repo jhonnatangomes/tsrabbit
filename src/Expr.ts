@@ -4,6 +4,7 @@ export interface ExprVisitor<R> {
   visitBinaryExpr: (expr: BinaryExpr) => R;
   visitGroupingExpr: (expr: GroupingExpr) => R;
   visitLiteralExpr: (expr: LiteralExpr) => R;
+  visitLogicalExpr: (expr: LogicalExpr) => R;
   visitTernaryExpr: (expr: TernaryExpr) => R;
   visitUnaryExpr: (expr: UnaryExpr) => R;
 }
@@ -69,6 +70,30 @@ export class LiteralExpr implements Expr {
   toString() {
     return {
       value: this.value,
+    }
+  }
+}
+
+export class LogicalExpr implements Expr {
+  left: Expr;
+  operator: Token;
+  right: Expr;
+
+  constructor(left: Expr, operator: Token, right: Expr) {
+    this.left = left;
+    this.operator = operator;
+    this.right = right;
+  }
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitLogicalExpr(this);
+  }
+
+  toString() {
+    return {
+      left: this.left.toString(),
+      operator: this.operator.toString(),
+      right: this.right.toString(),
     }
   }
 }
