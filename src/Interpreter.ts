@@ -133,6 +133,12 @@ export default class Interpreter
   };
 
   visitVarStmt = (stmt: VarStmt): Literal => {
+    if (stmt.name.lexeme === stmt.type) {
+      throw new RuntimeError(
+        stmt.name,
+        `Can't declare a variable with the same name as a type.`
+      );
+    }
     this.globals.assertType(stmt.equalToken, stmt.type);
     const initializer = this.evaluate(stmt.initializer);
     const initializerType = getLiteralType(initializer, stmt.equalToken);

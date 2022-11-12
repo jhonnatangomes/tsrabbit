@@ -62,7 +62,6 @@ export function resetError() {
   hadError = false;
 }
 export function runtimeError(error: RuntimeError, source: string) {
-  console.log({ error });
   const line = lineObject(source, error.token.position.start);
   report(line, ` at ${error.token.lexeme}`, error.message);
   hadRuntimeError = true;

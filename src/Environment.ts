@@ -63,7 +63,8 @@ export default class Environment {
   }
 
   assertType(equalToken: Token, type: string) {
-    if (this.isValidType(type)) return;
+    const types = getTypesFromUnion(type);
+    if (types.every(this.isValidType)) return;
     throw new RuntimeError(equalToken, `Type ${type} is not defined`);
   }
 
