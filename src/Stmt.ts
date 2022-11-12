@@ -3,6 +3,7 @@ import Token from './Token';
 
 export interface StmtVisitor<R> {
   visitExpressionStmt: (stmt: ExpressionStmt) => R;
+  visitTypeStmt: (stmt: TypeStmt) => R;
   visitVarStmt: (stmt: VarStmt) => R;
 }
 
@@ -25,6 +26,27 @@ export class ExpressionStmt implements Stmt {
   toString() {
     return {
       expression: this.expression.toString(),
+    }
+  }
+}
+
+export class TypeStmt implements Stmt {
+  name: Token;
+  type: string;
+
+  constructor(name: Token, type: string) {
+    this.name = name;
+    this.type = type;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitTypeStmt(this);
+  }
+
+  toString() {
+    return {
+      name: this.name.toString(),
+      type: this.type.toString(),
     }
   }
 }

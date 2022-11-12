@@ -34,6 +34,7 @@ function main() {
       // 'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
       // 'Return       -> keyword: Token, value: Expr | null',
       // 'While        -> condition: Expr, body: Stmt',
+      'Type         -> name: Token, type: string',
       'Var          -> type: string, name: Token, initializer: Expr, equalToken: Token',
     ],
     [

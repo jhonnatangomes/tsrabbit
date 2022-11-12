@@ -1,5 +1,6 @@
 import { RuntimeError } from './Error';
 import Token, { Literal } from './Token';
+import { TokenType } from './TokenType';
 
 function assertHomogeneousType(types: string[], token: Token, message: string) {
   for (let i = 1; i < types.length; i++) {
@@ -30,4 +31,18 @@ export function getLiteralType(value: Literal, token: Token): string {
   );
   assertHomogeneousType(mapTypes, token, 'Types of map values are not equal');
   return `map[${mapTypes[0]}]`;
+}
+
+export function typeKeywords() {
+  return [
+    TokenType.NUMBER,
+    TokenType.STRING,
+    TokenType.MAP,
+    TokenType.BOOLEAN,
+    TokenType.VOID,
+  ];
+}
+
+export function getTypesFromUnion(type: string) {
+  return type.split('|').map((s) => s.trim());
 }

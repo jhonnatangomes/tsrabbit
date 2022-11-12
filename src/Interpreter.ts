@@ -10,8 +10,8 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { getLiteralType } from './helpers';
-import { ExpressionStmt, Stmt, StmtVisitor, VarStmt } from './Stmt';
+import { getLiteralType, getTypesFromUnion } from './helpers';
+import { ExpressionStmt, Stmt, StmtVisitor, TypeStmt, VarStmt } from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
@@ -125,13 +125,23 @@ export default class Interpreter
   visitExpressionStmt = (stmt: ExpressionStmt): Literal => {
     return this.evaluate(stmt.expression);
   };
+
+  visitTypeStmt = (stmt: TypeStmt): Literal => {
+    this.environment.defineType(stmt.name, stmt.type);
+    return null;
+  };
+
   visitVarStmt = (stmt: VarStmt): Literal => {
+    this.globals.assertType(stmt.equalToken, stmt.type);
     const initializer = this.evaluate(stmt.initializer);
     const initializerType = getLiteralType(initializer, stmt.equalToken);
-    if (initializerType !== stmt.type) {
+    const stmtTypes = this.globals.getType(stmt.name, stmt.type);
+    if (!stmtTypes.includes(initializerType)) {
       throw new RuntimeError(
         stmt.equalToken,
-        `Tried to assign type ${initializerType} to ${stmt.type}`
+        `Tried to assign type ${initializerType} to type ${stmtTypes.join(
+          ' | '
+        )}`
       );
     }
     this.environment.define(stmt.name, initializer, initializerType);

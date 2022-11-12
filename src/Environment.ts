@@ -1,8 +1,15 @@
 import { RuntimeError } from './Error';
+import { getTypesFromUnion } from './helpers';
 import Token, { Literal } from './Token';
 
 export default class Environment {
   values: Record<string, { literal: Literal; type: string }> = {};
+  types: Record<string, string[]> = {
+    string: ['string'],
+    number: ['number'],
+    boolean: ['boolean'],
+    void: ['void'],
+  };
   enclosing: Environment | null;
 
   constructor(environment?: Environment) {
@@ -19,6 +26,34 @@ export default class Environment {
     this.values[name.lexeme] = { literal: value, type };
   }
 
+  defineType(name: Token, type: string) {
+    if (this.types[name.lexeme] !== undefined) {
+      throw new RuntimeError(name, `Type ${name} is already declared.`);
+    }
+    this.types[name.lexeme] = getTypesFromUnion(type);
+  }
+
+  getType(name: Token, type: string): string[] {
+    const simpleTypes = Object.keys(this.types);
+    if (simpleTypes.includes(type)) return this.types[type];
+    const arrayRegex = new RegExp(`^(?:${simpleTypes.join('|')})((?:\[\])+)$`);
+    const arrayMatch = type.match(arrayRegex);
+    if (arrayMatch) {
+      return this.types[type].map((t) => t + arrayMatch[0]);
+    }
+    const mapRegex = /^map\[(.*)\]$/;
+    const mapMatch = type.match(mapRegex);
+    if (mapMatch) {
+      return this.getType(name, mapMatch[0]).map((t) => `map[${t}]`);
+    }
+    throw new RuntimeError(name, `Type ${type} is not defined`);
+  }
+
+  assertType(equalToken: Token, type: string) {
+    if (this.isValidType(type)) return;
+    throw new RuntimeError(equalToken, `Type ${type} is not defined`);
+  }
+
   get(name: Token): Literal {
     if (this.values[name.lexeme] !== undefined) {
       return this.values[name.lexeme];
@@ -28,4 +63,18 @@ export default class Environment {
     }
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   }
+
+  //helpers
+  private isValidType = (type: string): boolean => {
+    const simpleTypes = Object.keys(this.types);
+    if (simpleTypes.includes(type)) return true;
+    const arrayRegex = new RegExp(`^(${simpleTypes.join('|')})(\[\])+$`);
+    if (type.match(arrayRegex)) return true;
+    const mapRegex = /^map\[(.*)\]$/;
+    const mapMatch = type.match(mapRegex);
+    if (mapMatch) {
+      return this.isValidType(mapMatch[0]);
+    }
+    return false;
+  };
 }

@@ -9,30 +9,33 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-program        → declaration* EOF ;
-declaration    → varDecl
-               | statement ;
-varDecl        → type IDENTIFIER "=" expression  ";" ;
-statement      → exprStatement ;
-exprStatement  → expression ";" ;
-expression     → ternary ;
-ternary        → logic_or ( "?" ternary ":" ternary ) * ;
-logic_or       → logic_and ( "||" logic_and ) * ;
-logic_and      → equality ( "&&" equality ) * ;
-equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term           → factor ( ( "-" | "+" ) factor )* ;
-factor         → unary ( ( "/" | "*" ) unary )* ;
-unary          → ( "!" | "-" ) unary
-               | primary ;
-primary        → primitive
-               | "(" expression ")" ;
-array          → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
-map            → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
-primitive      → NUMBER | STRING | true | false | null | array | map ;
-mapMem         → IDENTIFIER ":" primitive ;
-type           → typePrimitive ( ( "[]" ) | "[" type "]" )* ;
-typePrimitive  → "number" | "string" | "map" | "bool" | "void" ;
+program         → tlDeclaration* EOF ;
+tlDeclaration   → typeDecl
+                | declaration ;
+typeDecl        → "type" IDENTIFIER "=" type ( "|" type )* ";" ;
+declaration     → varDecl
+                | statement ;
+varDecl         → type IDENTIFIER "=" expression  ";" ;
+statement       → exprStatement ;
+exprStatement   → expression ";" ;
+expression      → ternary ;
+ternary         → logic_or ( "?" ternary ":" ternary ) * ;
+logic_or        → logic_and ( "||" logic_and ) * ;
+logic_and       → equality ( "&&" equality ) * ;
+equality        → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison      → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term            → factor ( ( "-" | "+" ) factor )* ;
+factor          → unary ( ( "/" | "*" ) unary )* ;
+unary           → ( "!" | "-" ) unary
+                | primary ;
+primary         → primitive
+                | "(" expression ")" ;
+array           → "[" ( primitive ( "," primitive ) * ( "," ) * ) * "]"
+map             → "{" ( mapMem ( "," mapMem ) * ( "," ) * ) * "}"
+primitive       → NUMBER | STRING | true | false | null | array | map ;
+mapMem          → IDENTIFIER ":" primitive ;
+type            → typePrimitive ( ( "[]" ) | "[" type "]" )* ;
+typePrimitive   → "number" | "string" | "map" | "bool" | "void" ;
 ```
 
 ## Installation

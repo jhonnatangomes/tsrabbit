@@ -8,7 +8,8 @@ import {
   TernaryExpr,
   UnaryExpr,
 } from './Expr';
-import { ExpressionStmt, Stmt, VarStmt } from './Stmt';
+import { typeKeywords } from './helpers';
+import { ExpressionStmt, Stmt, TypeStmt, VarStmt } from './Stmt';
 import Token from './Token';
 import { TokenType } from './TokenType';
 
@@ -24,7 +25,7 @@ export default class Parser {
   parse = () => {
     const statements: Stmt[] = [];
     while (!this.isAtEnd()) {
-      const declaration = this.declaration();
+      const declaration = this.tlDeclaration();
       if (declaration) {
         statements.push(declaration);
       }
@@ -33,15 +34,43 @@ export default class Parser {
   };
 
   //productions
-  private declaration = (): Stmt | null => {
+  private tlDeclaration = (): Stmt | null => {
     try {
-      if (this.typeKeywords().includes(this.peek().type))
-        return this.varDeclaration();
-      return this.statement();
+      if (this.match(TokenType.TYPE)) return this.typeDeclaration();
+      return this.declaration();
     } catch (error) {
       this.synchronize();
       return null;
     }
+  };
+
+  private typeDeclaration = (): Stmt => {
+    const identifier = this.consume(
+      TokenType.IDENTIFIER,
+      'Expect identifier in type declaration.'
+    );
+    this.consume(
+      TokenType.EQUAL,
+      "Expect '=' after identifier in type declaration."
+    );
+    let type = this.type();
+    while (this.match(TokenType.TYPE_OR)) {
+      type += ` | ${this.type()}`;
+    }
+    this.consume(TokenType.SEMICOLON, "Expect ';' after type declaration.");
+    return new TypeStmt(identifier, type);
+  };
+
+  private declaration = (): Stmt => {
+    if (
+      (this.peek().type === TokenType.IDENTIFIER ||
+        typeKeywords().includes(this.peek().type)) &&
+      (this.peekNext().type === TokenType.IDENTIFIER ||
+        this.peekNext().type === TokenType.RIGHT_BRACKET)
+    ) {
+      return this.varDeclaration();
+    }
+    return this.statement();
   };
 
   private varDeclaration = (): Stmt => {
@@ -308,18 +337,13 @@ export default class Parser {
     return this.tokens[this.current];
   };
 
-  private previous = () => {
-    return this.tokens[this.current - 1];
+  private peekNext = () => {
+    if (this.current + 1 >= this.tokens.length) return this.tokens.at(-1)!;
+    return this.tokens[this.current + 1];
   };
 
-  private typeKeywords = () => {
-    return [
-      TokenType.NUMBER,
-      TokenType.STRING,
-      TokenType.MAP,
-      TokenType.BOOLEAN,
-      TokenType.VOID,
-    ];
+  private previous = () => {
+    return this.tokens[this.current - 1];
   };
 
   //error handling
