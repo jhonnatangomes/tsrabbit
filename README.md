@@ -9,12 +9,11 @@ This is a typescript implementation of the tree-walk interpreter of the Lox prog
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-program         → tlDeclaration* EOF ;
-tlDeclaration   → typeDecl
-                | declaration ;
-typeDecl        → "type" IDENTIFIER "=" type ( "|" type )* ";" ;
+program         → declaration* EOF ;
 declaration     → varDecl
-                | statement ;
+                | typeDecl 
+                | statement ; 
+typeDecl        → "type" IDENTIFIER "=" type ( "|" type )* ";" ;
 varDecl         → type IDENTIFIER "=" expression  ";" ;
 statement       → exprStatement ;
 exprStatement   → expression ";" ;
