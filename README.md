@@ -15,7 +15,9 @@ declaration     → varDecl
                 | statement ; 
 typeDecl        → "type" IDENTIFIER "=" type ( "|" type )* ";" ;
 varDecl         → type IDENTIFIER "=" expression  ";" ;
-statement       → exprStatement ;
+statement       → exprStatement  | ifStmt;
+ifStmt          → "if" "(" expression ")" statement
+                ( "else" ( "if" "(" expression ")" ) ? statement ) * ;
 exprStatement   → expression ";" ;
 expression      → ternary ;
 ternary         → logic_or ( "?" ternary ":" ternary ) * ;

@@ -1,4 +1,4 @@
-import { ParseError, tokenError } from "./Error";
+import { ParseError, tokenError } from './Error';
 import {
   BinaryExpr,
   Expr,
@@ -8,11 +8,11 @@ import {
   TernaryExpr,
   UnaryExpr,
   VariableExpr,
-} from "./Expr";
-import { typeKeywords } from "./helpers";
-import { ExpressionStmt, Stmt, TypeStmt, VarStmt } from "./Stmt";
-import Token from "./Token";
-import { TokenType } from "./TokenType";
+} from './Expr';
+import { typeKeywords } from './helpers';
+import { ExpressionStmt, IfStmt, Stmt, TypeStmt, VarStmt } from './Stmt';
+import Token from './Token';
+import { TokenType } from './TokenType';
 
 export default class Parser {
   private tokens: Token[];
@@ -56,7 +56,7 @@ export default class Parser {
   private typeDeclaration = (): Stmt => {
     const identifier = this.consume(
       TokenType.IDENTIFIER,
-      "Expect identifier in type declaration."
+      'Expect identifier in type declaration.'
     );
     this.consume(
       TokenType.EQUAL,
@@ -74,7 +74,7 @@ export default class Parser {
     const type = this.type();
     const name = this.consume(
       TokenType.IDENTIFIER,
-      "Expect identifier in variable declaration"
+      'Expect identifier in variable declaration'
     );
     const equal = this.consume(
       TokenType.EQUAL,
@@ -102,13 +102,45 @@ export default class Parser {
         TokenType.RIGHT_BRACKET,
         "Expect ']' after opening '[' in array type declaration"
       );
-      typePrimitive += "[]";
+      typePrimitive += '[]';
     }
     return typePrimitive;
   };
 
   private statement = (): Stmt => {
+    if (this.match(TokenType.IF)) {
+      return this.ifStatement();
+    }
     return this.expressionStatement();
+  };
+
+  private ifStatement = (): Stmt => {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if' keyword.");
+    const ifCondition = this.expression();
+    this.consume(
+      TokenType.RIGHT_PAREN,
+      "Expect ')' after condition in if statement keyword."
+    );
+    const thenBranch = this.statement();
+    const elseIfConditions: Expr[] = [];
+    const alternativeBranches: Stmt[] = [];
+    while (this.match(TokenType.ELSE)) {
+      if (this.match(TokenType.IF)) {
+        this.consume(TokenType.LEFT_PAREN, "Expect '(' after else if keyword.");
+        elseIfConditions.push(this.expression());
+        this.consume(
+          TokenType.RIGHT_PAREN,
+          "Expect ')' after else if condition."
+        );
+      }
+      alternativeBranches.push(this.statement());
+    }
+    return new IfStmt(
+      ifCondition,
+      elseIfConditions,
+      thenBranch,
+      alternativeBranches
+    );
   };
 
   private expressionStatement = (): Stmt => {
@@ -241,7 +273,7 @@ export default class Parser {
     }
     if (this.match(TokenType.LEFT_BRACKET)) return this.array();
     if (this.match(TokenType.LEFT_BRACE)) return this.map();
-    throw this.error(this.peek(), "Expect expression.");
+    throw this.error(this.peek(), 'Expect expression.');
   };
 
   private array = (): LiteralExpr => {
@@ -260,7 +292,7 @@ export default class Parser {
       }
     }
     if (this.isAtEnd()) {
-      throw this.error(this.peek(), "Unterminated array.");
+      throw this.error(this.peek(), 'Unterminated array.');
     }
     return new LiteralExpr(arr.map((el) => el.value));
   };
@@ -281,7 +313,7 @@ export default class Parser {
       }
     }
     if (this.isAtEnd()) {
-      throw this.error(this.peek(), "Unterminated map.");
+      throw this.error(this.peek(), 'Unterminated map.');
     }
     return new LiteralExpr(
       (maps as Record<string, unknown>[]).reduce(
@@ -294,7 +326,7 @@ export default class Parser {
   private mapMember = (): LiteralExpr => {
     const key = this.consume(
       TokenType.IDENTIFIER,
-      "Expect key name in new element of map."
+      'Expect key name in new element of map.'
     );
     this.consume(TokenType.COLON, "Expect ':' after key name in map element.");
     const { value } = this.primitive();

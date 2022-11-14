@@ -12,7 +12,14 @@ import {
   VariableExpr,
 } from './Expr';
 import { getLiteralType } from './helpers';
-import { ExpressionStmt, Stmt, StmtVisitor, TypeStmt, VarStmt } from './Stmt';
+import {
+  ExpressionStmt,
+  IfStmt,
+  Stmt,
+  StmtVisitor,
+  TypeStmt,
+  VarStmt,
+} from './Stmt';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';
 
@@ -129,6 +136,23 @@ export default class Interpreter
 
   visitExpressionStmt = (stmt: ExpressionStmt): Literal => {
     return this.evaluate(stmt.expression);
+  };
+
+  visitIfStmt = (stmt: IfStmt): Literal => {
+    if (this.isTruthy(this.evaluate(stmt.ifCondition))) {
+      return this.execute(stmt.thenBranch);
+    }
+    for (let i = 0; i < stmt.elseIfConditions.length; i++) {
+      const condition = stmt.elseIfConditions[i];
+      const isConditionTruthy = this.isTruthy(this.evaluate(condition));
+      if (isConditionTruthy) {
+        return this.execute(stmt.alternativeBranches[i]);
+      }
+    }
+    if (stmt.elseIfConditions.length !== stmt.alternativeBranches.length) {
+      return this.execute(stmt.alternativeBranches.at(-1)!);
+    }
+    return null;
   };
 
   visitTypeStmt = (stmt: TypeStmt): Literal => {

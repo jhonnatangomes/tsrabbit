@@ -3,6 +3,7 @@ import Token from './Token';
 
 export interface StmtVisitor<R> {
   visitExpressionStmt: (stmt: ExpressionStmt) => R;
+  visitIfStmt: (stmt: IfStmt) => R;
   visitTypeStmt: (stmt: TypeStmt) => R;
   visitVarStmt: (stmt: VarStmt) => R;
 }
@@ -26,7 +27,39 @@ export class ExpressionStmt implements Stmt {
   toString() {
     return {
       expression: this.expression.toString(),
-    }
+    };
+  }
+}
+
+export class IfStmt implements Stmt {
+  ifCondition: Expr;
+  elseIfConditions: Expr[];
+  thenBranch: Stmt;
+  alternativeBranches: Stmt[];
+
+  constructor(
+    ifCondition: Expr,
+    elseIfConditions: Expr[],
+    thenBranch: Stmt,
+    alternativeBranches: Stmt[]
+  ) {
+    this.ifCondition = ifCondition;
+    this.elseIfConditions = elseIfConditions;
+    this.thenBranch = thenBranch;
+    this.alternativeBranches = alternativeBranches;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitIfStmt(this);
+  }
+
+  toString() {
+    return {
+      ifCondition: this.ifCondition.toString(),
+      elseIfConditions: this.elseIfConditions.toString(),
+      thenBranch: this.thenBranch.toString(),
+      alternativeBranches: this.alternativeBranches.toString(),
+    };
   }
 }
 
@@ -47,7 +80,7 @@ export class TypeStmt implements Stmt {
     return {
       name: this.name.toString(),
       type: this.type.toString(),
-    }
+    };
   }
 }
 
@@ -74,7 +107,6 @@ export class VarStmt implements Stmt {
       name: this.name.toString(),
       initializer: this.initializer.toString(),
       equalToken: this.equalToken.toString(),
-    }
+    };
   }
 }
-
