@@ -7,7 +7,6 @@ import { hadError, hadRuntimeError, resetError } from './Error';
 import Interpreter from './Interpreter';
 import Parser from './Parser';
 import Scanner from './Scanner';
-import { Literal } from './Token';
 
 type Flag = typeof VALID_FLAGS[number];
 const VALID_FLAGS = ['--print-tokens', '--print-ast'];

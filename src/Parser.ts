@@ -10,7 +10,14 @@ import {
   VariableExpr,
 } from './Expr';
 import { typeKeywords } from './helpers';
-import { ExpressionStmt, IfStmt, Stmt, TypeStmt, VarStmt } from './Stmt';
+import {
+  BlockStmt,
+  ExpressionStmt,
+  IfStmt,
+  Stmt,
+  TypeStmt,
+  VarStmt,
+} from './Stmt';
 import Token from './Token';
 import { TokenType } from './TokenType';
 
@@ -111,7 +118,22 @@ export default class Parser {
     if (this.match(TokenType.IF)) {
       return this.ifStatement();
     }
+    if (this.match(TokenType.LEFT_BRACE)) {
+      return new BlockStmt(this.block());
+    }
     return this.expressionStatement();
+  };
+
+  private block = (): Stmt[] => {
+    const statements: Stmt[] = [];
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      const declaration = this.declaration();
+      if (declaration) {
+        statements.push(declaration);
+      }
+    }
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
   };
 
   private ifStatement = (): Stmt => {

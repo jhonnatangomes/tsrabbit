@@ -11,11 +11,12 @@ This space will be used to specify Rabbit's grammar. It will be updated as I wor
 ```
 program         → declaration* EOF ;
 declaration     → varDecl
-                | typeDecl 
-                | statement ; 
+                | typeDecl
+                | statement ;
 typeDecl        → "type" IDENTIFIER "=" type ( "|" type )* ";" ;
 varDecl         → type IDENTIFIER "=" expression  ";" ;
-statement       → exprStatement  | ifStmt;
+statement       → exprStatement  | ifStmt | block;
+block           → "{" declaration* "}"
 ifStmt          → "if" "(" expression ")" statement
                 ( "else" ( "if" "(" expression ")" ) ? statement ) * ;
 exprStatement   → expression ";" ;

@@ -13,6 +13,7 @@ import {
 } from './Expr';
 import { getLiteralType } from './helpers';
 import {
+  BlockStmt,
   ExpressionStmt,
   IfStmt,
   Stmt,
@@ -136,6 +137,21 @@ export default class Interpreter
 
   visitExpressionStmt = (stmt: ExpressionStmt): Literal => {
     return this.evaluate(stmt.expression);
+  };
+
+  visitBlockStmt = (stmt: BlockStmt): Literal => {
+    this.executeBlock(stmt.statements, new Environment(this.environment));
+    return null;
+  };
+
+  executeBlock = (statements: Stmt[], environment: Environment) => {
+    const previous = this.environment;
+    try {
+      this.environment = environment;
+      statements.forEach(this.execute);
+    } finally {
+      this.environment = previous;
+    }
   };
 
   visitIfStmt = (stmt: IfStmt): Literal => {

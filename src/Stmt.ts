@@ -2,6 +2,7 @@ import { Expr } from './Expr';
 import Token from './Token';
 
 export interface StmtVisitor<R> {
+  visitBlockStmt: (stmt: BlockStmt) => R;
   visitExpressionStmt: (stmt: ExpressionStmt) => R;
   visitIfStmt: (stmt: IfStmt) => R;
   visitTypeStmt: (stmt: TypeStmt) => R;
@@ -11,6 +12,24 @@ export interface StmtVisitor<R> {
 export abstract class Stmt {
   abstract accept: <R>(visitor: StmtVisitor<R>) => R;
   abstract toString: () => Record<string, unknown>;
+}
+
+export class BlockStmt implements Stmt {
+  statements: Stmt[];
+
+  constructor(statements: Stmt[]) {
+    this.statements = statements;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitBlockStmt(this);
+  }
+
+  toString() {
+    return {
+      statements: this.statements.toString(),
+    };
+  }
 }
 
 export class ExpressionStmt implements Stmt {

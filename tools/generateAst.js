@@ -28,7 +28,7 @@ function main() {
     outputDir,
     'Stmt',
     [
-      // 'Block        -> statements: Stmt[]',
+      'Block        -> statements: Stmt[]',
       'Expression   -> expression: Expr',
       // 'Function     -> name: Token, params: Token[], body: Stmt[]',
       'If           -> ifCondition: Expr, elseIfConditions: Expr[], thenBranch: Stmt, alternativeBranches: Stmt[]',
