@@ -14,6 +14,7 @@ export interface ExprVisitor<R> {
 
 export abstract class Expr {
   abstract accept: <R>(visitor: ExprVisitor<R>) => R;
+  abstract toString: () => Record<string, unknown>;
 }
 
 export class AssignExpr implements Expr {
@@ -27,6 +28,12 @@ export class AssignExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitAssignExpr(this);
+  }
+  toString() {
+    return {
+      name: this.name.toString(),
+      value: this.value.toString(),
+    }
   }
 }
 
@@ -44,6 +51,13 @@ export class BinaryExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitBinaryExpr(this);
   }
+  toString() {
+    return {
+      left: this.left.toString(),
+      operator: this.operator.toString(),
+      right: this.right.toString(),
+    }
+  }
 }
 
 export class CallExpr implements Expr {
@@ -60,6 +74,13 @@ export class CallExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitCallExpr(this);
   }
+  toString() {
+    return {
+      callee: this.callee.toString(),
+      paren: this.paren.toString(),
+      args: this.args.toString(),
+    }
+  }
 }
 
 export class GroupingExpr implements Expr {
@@ -72,6 +93,11 @@ export class GroupingExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitGroupingExpr(this);
   }
+  toString() {
+    return {
+      expression: this.expression.toString(),
+    }
+  }
 }
 
 export class LiteralExpr implements Expr {
@@ -83,6 +109,11 @@ export class LiteralExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitLiteralExpr(this);
+  }
+  toString() {
+    return {
+      value: this.value,
+    }
   }
 }
 
@@ -100,6 +131,13 @@ export class LogicalExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitLogicalExpr(this);
   }
+  toString() {
+    return {
+      left: this.left.toString(),
+      operator: this.operator.toString(),
+      right: this.right.toString(),
+    }
+  }
 }
 
 export class TernaryExpr implements Expr {
@@ -116,6 +154,13 @@ export class TernaryExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitTernaryExpr(this);
   }
+  toString() {
+    return {
+      condition: this.condition.toString(),
+      trueBranch: this.trueBranch.toString(),
+      falseBranch: this.falseBranch.toString(),
+    }
+  }
 }
 
 export class UnaryExpr implements Expr {
@@ -130,6 +175,12 @@ export class UnaryExpr implements Expr {
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitUnaryExpr(this);
   }
+  toString() {
+    return {
+      operator: this.operator.toString(),
+      right: this.right.toString(),
+    }
+  }
 }
 
 export class VariableExpr implements Expr {
@@ -141,6 +192,11 @@ export class VariableExpr implements Expr {
 
   accept<R>(visitor: ExprVisitor<R>): R {
     return visitor.visitVariableExpr(this);
+  }
+  toString() {
+    return {
+      name: this.name.toString(),
+    }
   }
 }
 

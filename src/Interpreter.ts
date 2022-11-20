@@ -1,6 +1,6 @@
-import { runtimeError } from '.';
 import { Callable } from './Callable';
 import Environment from './Environment';
+import { runtimeError } from './Error';
 import {
   AssignExpr,
   BinaryExpr,
@@ -47,35 +47,37 @@ const {
   PLUS,
   BANG,
   PIPE_PIPE,
-  AMPERSAND_AMPERSAND,
 } = TokenType;
 
 export default class Interpreter
-  implements ExprVisitor<Literal>, StmtVisitor<void>
+  implements ExprVisitor<Literal>, StmtVisitor<Literal>
 {
   source: string;
-  globals = new Environment();
-  environment = this.globals;
+  globals: Environment = new Environment();
+  environment: Environment = this.globals;
 
-  constructor(source: string) {
-    this.source = source;
-    this.globals.define('clock', new Clock());
-    this.globals.define('print', new Print());
-    this.globals.define('random', new Random());
-  }
-
-  interpret(statements: Stmt[]) {
+  interpret = (statements: Stmt[]) => {
     try {
-      statements.forEach((statement) => {
-        this.execute(statement);
-      });
+      return statements.map(this.execute.bind(this));
     } catch (error) {
       runtimeError(error as RuntimeError, this.source);
+      return null;
+    }
+  };
+
+  constructor(source: string, globalEnv: Environment) {
+    this.source = source;
+    this.globals = globalEnv;
+    this.environment = this.globals;
+    if (!this.globals.values['clock']) {
+      this.globals.define('clock', new Clock());
+      this.globals.define('print', new Print());
+      this.globals.define('random', new Random());
     }
   }
 
   private execute(stmt: Stmt) {
-    stmt.accept(this);
+    return stmt.accept(this);
   }
 
   private evaluate(expr: Expr) {
@@ -154,17 +156,18 @@ export default class Interpreter
     return this.evaluate(expr.falseBranch);
   }
 
-  visitExpressionStmt(stmt: ExpressionStmt): void {
-    this.evaluate(stmt.expression);
+  visitExpressionStmt(stmt: ExpressionStmt): Literal {
+    return this.evaluate(stmt.expression);
   }
 
-  visitVarStmt(stmt: VarStmt): void {
+  visitVarStmt(stmt: VarStmt): Literal {
     let value = null;
     if (stmt.initializer !== null) {
       value = this.evaluate(stmt.initializer);
     }
 
     this.environment.define(stmt.name.lexeme, value);
+    return null;
   }
 
   visitVariableExpr(expr: VariableExpr): Literal {
@@ -177,16 +180,18 @@ export default class Interpreter
     return value;
   }
 
-  visitBlockStmt(stmt: BlockStmt): void {
+  visitBlockStmt(stmt: BlockStmt): Literal {
     this.executeBlock(stmt.statements, new Environment(this.environment));
+    return null;
   }
 
-  visitIfStmt(stmt: IfStmt): void {
+  visitIfStmt(stmt: IfStmt): Literal {
     if (this.isTruthy(this.evaluate(stmt.condition))) {
       this.execute(stmt.thenBranch);
     } else if (stmt.elseBranch !== null) {
       this.execute(stmt.elseBranch);
     }
+    return null;
   }
 
   visitLogicalExpr(expr: LogicalExpr): Literal {
@@ -199,10 +204,11 @@ export default class Interpreter
     return this.evaluate(expr.right);
   }
 
-  visitWhileStmt(stmt: WhileStmt): void {
+  visitWhileStmt(stmt: WhileStmt): Literal {
     while (this.isTruthy(this.evaluate(stmt.condition))) {
       this.execute(stmt.body);
     }
+    return null;
   }
 
   visitCallExpr(expr: CallExpr): Literal {
@@ -210,10 +216,7 @@ export default class Interpreter
     const args: Literal[] = [];
     expr.args.forEach((arg) => args.push(this.evaluate(arg)));
     if (!(callee instanceof Callable)) {
-      throw new RuntimeError(
-        expr.paren,
-        'Can only call functions and classes.'
-      );
+      throw new RuntimeError(expr.paren, 'Can only call functions.');
     }
     const func = callee as Callable;
     if (func.arity() !== Infinity && args.length !== func.arity()) {
@@ -222,15 +225,16 @@ export default class Interpreter
         `Expected ${func.arity()} arguments but got ${args.length}.`
       );
     }
-    return func.call(this, args);
+    return func.call(this, args, expr.paren);
   }
 
-  visitFunctionStmt(stmt: FunctionStmt): void {
+  visitFunctionStmt(stmt: FunctionStmt): Literal {
     const func = new RabbitFunction(stmt, this.environment);
     this.environment.define(stmt.name.lexeme, func);
+    return null;
   }
 
-  visitReturnStmt(stmt: ReturnStmt): void {
+  visitReturnStmt(stmt: ReturnStmt): Literal {
     let value = null;
     if (stmt.value !== null) {
       value = this.evaluate(stmt.value);

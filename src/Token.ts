@@ -10,14 +10,14 @@ export type Literal = string | number | boolean | Callable | null;
 export default class Token {
   type: TokenType;
   lexeme: string;
-  literal?: Literal;
+  literal: Literal;
   position: Position;
 
   constructor(
     type: TokenType,
     lexeme: string,
     position: Position,
-    literal?: Literal
+    literal: Literal = null
   ) {
     this.type = type;
     this.lexeme = lexeme;

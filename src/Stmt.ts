@@ -13,6 +13,7 @@ export interface StmtVisitor<R> {
 
 export abstract class Stmt {
   abstract accept: <R>(visitor: StmtVisitor<R>) => R;
+  abstract toString: () => Record<string, unknown>;
 }
 
 export class BlockStmt implements Stmt {
@@ -25,6 +26,11 @@ export class BlockStmt implements Stmt {
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitBlockStmt(this);
   }
+  toString() {
+    return {
+      statements: this.statements.toString(),
+    };
+  }
 }
 
 export class ExpressionStmt implements Stmt {
@@ -36,6 +42,11 @@ export class ExpressionStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitExpressionStmt(this);
+  }
+  toString() {
+    return {
+      expression: this.expression.toString(),
+    };
   }
 }
 
@@ -53,6 +64,13 @@ export class FunctionStmt implements Stmt {
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitFunctionStmt(this);
   }
+  toString() {
+    return {
+      name: this.name.toString(),
+      params: this.params.toString(),
+      body: this.body.toString(),
+    };
+  }
 }
 
 export class IfStmt implements Stmt {
@@ -69,6 +87,13 @@ export class IfStmt implements Stmt {
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitIfStmt(this);
   }
+  toString() {
+    return {
+      condition: this.condition.toString(),
+      thenBranch: this.thenBranch.toString(),
+      elseBranch: this.elseBranch?.toString() || null,
+    };
+  }
 }
 
 export class ReturnStmt implements Stmt {
@@ -82,6 +107,12 @@ export class ReturnStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitReturnStmt(this);
+  }
+  toString() {
+    return {
+      keyword: this.keyword.toString(),
+      value: this.value?.toString() || null,
+    };
   }
 }
 
@@ -97,6 +128,12 @@ export class WhileStmt implements Stmt {
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitWhileStmt(this);
   }
+  toString() {
+    return {
+      condition: this.condition.toString(),
+      body: this.body.toString(),
+    };
+  }
 }
 
 export class VarStmt implements Stmt {
@@ -110,5 +147,11 @@ export class VarStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitVarStmt(this);
+  }
+  toString() {
+    return {
+      name: this.name.toString(),
+      initializer: this.initializer?.toString() || null,
+    };
   }
 }

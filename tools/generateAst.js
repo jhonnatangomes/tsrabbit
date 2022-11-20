@@ -62,14 +62,13 @@ function defineVisitor(baseName, types) {
   fileContent += '}\n\n';
   return fileContent;
 }
-
 function defineAbstractClass(baseName) {
   let fileContent = `export abstract class ${baseName} {\n`;
   fileContent += `  abstract accept: <R>(visitor: ${baseName}Visitor<R>) => R;\n`;
+  fileContent += `  abstract toString: () => Record<string, unknown>;\n`;
   fileContent += '}\n\n';
   return fileContent;
 }
-
 function defineType(baseName, className, fieldList) {
   let fileContent = `export class ${className}${baseName} implements ${baseName} {\n`;
   const fields = fieldList.split(', ');
@@ -85,6 +84,17 @@ function defineType(baseName, className, fieldList) {
   fileContent += '  }\n\n';
   fileContent += `  accept<R>(visitor: ${baseName}Visitor<R>): R {\n`;
   fileContent += `    return visitor.visit${className}${baseName}(this);\n`;
+  fileContent += `  }\n`;
+  fileContent += `  toString() {\n`;
+  fileContent += `    return {\n`;
+  fields.map((field) => {
+    const name = field.split(':')[0].trim();
+    const type = field.split(':')[1].trim();
+    fileContent += `      ${name}: this.${name}${
+      type !== 'Literal' ? '.toString()' : ''
+    },\n`;
+  });
+  fileContent += `    }\n`;
   fileContent += `  }\n`;
   fileContent += '}\n\n';
   return fileContent;

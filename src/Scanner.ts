@@ -1,4 +1,4 @@
-import { lineError, tokenError } from '.';
+import { lineError } from './Error';
 import { lineObject } from './helpers';
 import Token, { Literal } from './Token';
 import { TokenType } from './TokenType';

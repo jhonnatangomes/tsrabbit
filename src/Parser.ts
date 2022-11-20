@@ -1,5 +1,4 @@
-import { tokenError } from '.';
-import { ParseError } from './Error';
+import { ParseError, tokenError } from './Error';
 import {
   AssignExpr,
   BinaryExpr,
