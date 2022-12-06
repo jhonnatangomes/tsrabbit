@@ -1,0 +1,6 @@
+var a = 0;
+clock();
+for(var i = 0; i < 10000000; i = i + 1){
+  a = i;
+}
+print(clock());

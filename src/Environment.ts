@@ -24,7 +24,7 @@ export default class Environment {
   }
 
   assign(name: Token, value: Literal) {
-    if (this.values[name.lexeme]) {
+    if (this.values[name.lexeme] !== undefined) {
       this.values[name.lexeme] = value;
       return;
     }
