@@ -166,7 +166,7 @@ export default class Interpreter
       value = this.evaluate(stmt.initializer);
     }
 
-    this.environment.define(stmt.name.lexeme, value);
+    this.environment.define(stmt.name, value);
     return null;
   }
 
@@ -230,7 +230,7 @@ export default class Interpreter
 
   visitFunctionStmt(stmt: FunctionStmt): Literal {
     const func = new RabbitFunction(stmt, this.environment);
-    this.environment.define(stmt.name.lexeme, func);
+    this.environment.define(stmt.name, func);
     return null;
   }
 

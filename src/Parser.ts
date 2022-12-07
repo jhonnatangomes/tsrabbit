@@ -62,6 +62,8 @@ const {
   PIPE_PIPE,
   AMPERSAND_AMPERSAND,
   COMMA,
+  LEFT_BRACKET,
+  RIGHT_BRACKET,
 } = TokenType;
 
 export default class Parser {
@@ -239,7 +241,7 @@ export default class Parser {
     if (this.match(QUESTION)) {
       const trueBranch = this.expression();
       this.consume(COLON, 'Expect : after true branch of ternary operator.');
-      const falseBranch = this.expression();
+      const falseBranch = this.ternary();
       expr = new TernaryExpr(expr, trueBranch, falseBranch);
     }
     return expr;
@@ -362,6 +364,19 @@ export default class Parser {
       const expr = this.expression();
       this.consume(RIGHT_PAREN, "Expect ')' after expression.");
       return new GroupingExpr(expr);
+    }
+    if (this.match(LEFT_BRACKET)) {
+      const arr: unknown[] = [];
+      if (this.match(RIGHT_BRACKET)) return new LiteralExpr(arr);
+      arr.push(this.primary());
+      while (this.match(COMMA)) {
+        if (!this.match(RIGHT_BRACKET)) {
+          arr.push(this.primary());
+        } else {
+          break;
+        }
+      }
+      return new LiteralExpr(arr);
     }
     throw this.error(this.peek(), 'Expect expression.');
   }

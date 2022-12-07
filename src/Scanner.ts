@@ -47,6 +47,8 @@ const {
   COLON,
   AMPERSAND_AMPERSAND,
   PIPE_PIPE,
+  LEFT_BRACKET,
+  RIGHT_BRACKET,
 } = TokenType;
 
 export default class Scanner {
@@ -97,6 +99,12 @@ export default class Scanner {
         break;
       case ')':
         this.addToken(RIGHT_PAREN);
+        break;
+      case '[':
+        this.addToken(LEFT_BRACKET);
+        break;
+      case ']':
+        this.addToken(RIGHT_BRACKET);
         break;
       case '{':
         this.addToken(LEFT_BRACE);

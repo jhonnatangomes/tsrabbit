@@ -9,8 +9,15 @@ export default class Environment {
     this.enclosing = environment || null;
   }
 
-  define(name: string, value: Literal) {
-    this.values[name] = value;
+  define(name: Token | string, value: Literal) {
+    if (typeof name !== 'string' && this.values[name.lexeme] !== undefined) {
+      throw new RuntimeError(name, `Cannot redeclare variable ${name.lexeme}.`);
+    }
+    if (typeof name === 'string') {
+      this.values[name] = value;
+    } else {
+      this.values[name.lexeme] = value;
+    }
   }
 
   get(name: Token): Literal {
