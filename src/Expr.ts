@@ -1,10 +1,14 @@
 import Token, { Literal } from './Token';
 
+type HashLiteral = Record<string, Expr>
+
 export interface ExprVisitor<R> {
+  visitArrayLiteralExpr: (expr: ArrayLiteralExpr) => R;
   visitAssignExpr: (expr: AssignExpr) => R;
   visitBinaryExpr: (expr: BinaryExpr) => R;
   visitCallExpr: (expr: CallExpr) => R;
   visitGroupingExpr: (expr: GroupingExpr) => R;
+  visitHashLiteralExpr: (expr: HashLiteralExpr) => R;
   visitLiteralExpr: (expr: LiteralExpr) => R;
   visitLogicalExpr: (expr: LogicalExpr) => R;
   visitTernaryExpr: (expr: TernaryExpr) => R;
@@ -15,6 +19,23 @@ export interface ExprVisitor<R> {
 export abstract class Expr {
   abstract accept: <R>(visitor: ExprVisitor<R>) => R;
   abstract toString: () => Record<string, unknown>;
+}
+
+export class ArrayLiteralExpr implements Expr {
+  value: Expr[];
+
+  constructor(value: Expr[]) {
+    this.value = value;
+  }
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitArrayLiteralExpr(this);
+  }
+  toString() {
+    return {
+      value: this.value.toString(),
+    };
+  }
 }
 
 export class AssignExpr implements Expr {
@@ -33,7 +54,7 @@ export class AssignExpr implements Expr {
     return {
       name: this.name.toString(),
       value: this.value.toString(),
-    }
+    };
   }
 }
 
@@ -56,7 +77,7 @@ export class BinaryExpr implements Expr {
       left: this.left.toString(),
       operator: this.operator.toString(),
       right: this.right.toString(),
-    }
+    };
   }
 }
 
@@ -79,7 +100,7 @@ export class CallExpr implements Expr {
       callee: this.callee.toString(),
       paren: this.paren.toString(),
       args: this.args.toString(),
-    }
+    };
   }
 }
 
@@ -96,7 +117,24 @@ export class GroupingExpr implements Expr {
   toString() {
     return {
       expression: this.expression.toString(),
-    }
+    };
+  }
+}
+
+export class HashLiteralExpr implements Expr {
+  value: HashLiteral;
+
+  constructor(value: HashLiteral) {
+    this.value = value;
+  }
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitHashLiteralExpr(this);
+  }
+  toString() {
+    return {
+      value: this.value.toString(),
+    };
   }
 }
 
@@ -113,7 +151,7 @@ export class LiteralExpr implements Expr {
   toString() {
     return {
       value: this.value,
-    }
+    };
   }
 }
 
@@ -136,7 +174,7 @@ export class LogicalExpr implements Expr {
       left: this.left.toString(),
       operator: this.operator.toString(),
       right: this.right.toString(),
-    }
+    };
   }
 }
 
@@ -159,7 +197,7 @@ export class TernaryExpr implements Expr {
       condition: this.condition.toString(),
       trueBranch: this.trueBranch.toString(),
       falseBranch: this.falseBranch.toString(),
-    }
+    };
   }
 }
 
@@ -179,7 +217,7 @@ export class UnaryExpr implements Expr {
     return {
       operator: this.operator.toString(),
       right: this.right.toString(),
-    }
+    };
   }
 }
 
@@ -196,7 +234,7 @@ export class VariableExpr implements Expr {
   toString() {
     return {
       name: this.name.toString(),
-    }
+    };
   }
 }
 

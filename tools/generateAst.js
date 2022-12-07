@@ -12,17 +12,22 @@ function main() {
     outputDir,
     'Expr',
     [
+      'ArrayLiteral -> value: Expr[]',
       'Assign       -> name: Token, value: Expr',
       'Binary       -> left: Expr, operator: Token, right: Expr',
       'Call         -> callee: Expr, paren: Token, args: Expr[]',
       'Grouping     -> expression: Expr',
+      'HashLiteral  -> value: HashLiteral',
       'Literal      -> value: Literal',
       'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
       'Unary        -> operator: Token, right: Expr',
       'Variable     -> name: Token',
     ],
-    ["import Token, { Literal } from './Token';"]
+    [
+      "import Token, { Literal } from './Token';",
+      '\ntype HashLiteral = Record<string, Expr>',
+    ]
   );
   defineAst(
     outputDir,
@@ -91,10 +96,10 @@ function defineType(baseName, className, fieldList) {
     const name = field.split(':')[0].trim();
     const type = field.split(':')[1].trim();
     fileContent += `      ${name}: this.${name}${
-      type !== 'Literal' ? '.toString()' : ''
-    },\n`;
+      type.includes('null') ? '?' : ''
+    }${type !== 'Literal' ? '.toString()' : ''},\n`;
   });
-  fileContent += `    }\n`;
+  fileContent += `    };\n`;
   fileContent += `  }\n`;
   fileContent += '}\n\n';
   return fileContent;

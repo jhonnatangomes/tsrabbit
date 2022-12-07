@@ -1,10 +1,12 @@
 import { ParseError, tokenError } from './Error';
 import {
+  ArrayLiteralExpr,
   AssignExpr,
   BinaryExpr,
   CallExpr,
   Expr,
   GroupingExpr,
+  HashLiteralExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
@@ -366,21 +368,61 @@ export default class Parser {
       return new GroupingExpr(expr);
     }
     if (this.match(LEFT_BRACKET)) {
-      const arr: unknown[] = [];
-      if (this.match(RIGHT_BRACKET)) return new LiteralExpr(arr);
-      arr.push(this.primary());
-      while (this.match(COMMA)) {
-        if (!this.match(RIGHT_BRACKET)) {
-          arr.push(this.primary());
-        } else {
-          break;
-        }
-      }
-      return new LiteralExpr(arr);
+      return this.array();
+    }
+    if (this.match(LEFT_BRACE)) {
+      return this.hash();
     }
     throw this.error(this.peek(), 'Expect expression.');
   }
 
+  private array(): ArrayLiteralExpr {
+    if (this.match(RIGHT_BRACKET)) return new ArrayLiteralExpr([]);
+    const firstEl = this.primary();
+    const arr = [];
+    arr.push(firstEl);
+    while (!this.match(RIGHT_BRACKET) && !this.isAtEnd()) {
+      this.consume(COMMA, "Expect ',' after element in array literal.");
+      if (this.peek().type !== RIGHT_BRACKET) {
+        const newEl = this.primary();
+        arr.push(newEl);
+      }
+    }
+    if (this.isAtEnd()) {
+      throw this.error(this.peek(), 'Unterminated array.');
+    }
+    return new ArrayLiteralExpr(arr);
+  }
+
+  private hash(): HashLiteralExpr {
+    if (this.match(RIGHT_BRACE)) return new HashLiteralExpr({});
+    const firstEl = this.hashMember();
+    const hashes = [];
+    hashes.push(firstEl);
+    while (!this.match(RIGHT_BRACE) && !this.isAtEnd()) {
+      this.consume(COMMA, "Expect ',' after element in hash literal.");
+      if (this.peek().type !== RIGHT_BRACE) {
+        const newEl = this.hashMember();
+        hashes.push(newEl);
+      }
+    }
+    if (this.isAtEnd()) {
+      throw this.error(this.peek(), 'Unterminated hash.');
+    }
+    return new HashLiteralExpr(
+      hashes.reduce((acc, curr) => ({ ...acc, ...curr }), {})
+    );
+  }
+
+  private hashMember() {
+    const key = this.consume(
+      TokenType.IDENTIFIER,
+      'Expect key name in new element of map.'
+    );
+    this.consume(TokenType.COLON, "Expect ':' after key name in map element.");
+    const value = this.primary();
+    return { [key.lexeme]: value };
+  }
   private synchronize() {
     this.advance();
 

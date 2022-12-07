@@ -2,12 +2,14 @@ import { Callable } from './Callable';
 import Environment from './Environment';
 import { runtimeError } from './Error';
 import {
+  ArrayLiteralExpr,
   AssignExpr,
   BinaryExpr,
   CallExpr,
   Expr,
   ExprVisitor,
   GroupingExpr,
+  HashLiteralExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
@@ -154,6 +156,16 @@ export default class Interpreter
       return this.evaluate(expr.trueBranch);
     }
     return this.evaluate(expr.falseBranch);
+  }
+  visitArrayLiteralExpr(expr: ArrayLiteralExpr): Literal {
+    const arrayValues = expr.value.map(this.evaluate.bind(this));
+    return arrayValues;
+  }
+  visitHashLiteralExpr(expr: HashLiteralExpr): Literal {
+    const hashValues = Object.fromEntries(
+      Object.entries(expr.value).map(([k, v]) => [k, this.evaluate(v)])
+    );
+    return hashValues;
   }
 
   visitExpressionStmt(stmt: ExpressionStmt): Literal {

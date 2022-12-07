@@ -91,7 +91,7 @@ export class IfStmt implements Stmt {
     return {
       condition: this.condition.toString(),
       thenBranch: this.thenBranch.toString(),
-      elseBranch: this.elseBranch?.toString() || null,
+      elseBranch: this.elseBranch?.toString(),
     };
   }
 }
@@ -111,7 +111,7 @@ export class ReturnStmt implements Stmt {
   toString() {
     return {
       keyword: this.keyword.toString(),
-      value: this.value?.toString() || null,
+      value: this.value?.toString(),
     };
   }
 }
@@ -151,7 +151,8 @@ export class VarStmt implements Stmt {
   toString() {
     return {
       name: this.name.toString(),
-      initializer: this.initializer?.toString() || null,
+      initializer: this.initializer?.toString(),
     };
   }
 }
+
