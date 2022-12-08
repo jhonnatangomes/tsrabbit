@@ -1,9 +1,9 @@
 import fs from 'fs';
 import process, { stdin, stdout } from 'process';
 import { createInterface } from 'readline';
-import { inspect } from 'util';
 import Environment from './Environment';
 import { hadError, hadRuntimeError, resetError } from './Error';
+import { logNode } from './helpers';
 import Interpreter from './Interpreter';
 import Parser from './Parser';
 import Scanner from './Scanner';
@@ -62,20 +62,13 @@ function run(
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
   if (flags.includes('--print-tokens')) {
-    tokens.forEach((token) =>
-      console.log(inspect(token.toString(), { depth: null }))
-    );
+    logNode(tokens);
   }
   const parser = new Parser(tokens, source);
   const statements = parser.parse();
   if (!statements) return;
   if (flags.includes('--print-ast')) {
-    console.log(
-      inspect(
-        statements.map((stmt) => stmt.toString()),
-        { depth: null }
-      )
-    );
+    logNode(statements);
   }
   if (hadError) return;
   const interpreter = new Interpreter(source, environment || new Environment());

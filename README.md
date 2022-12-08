@@ -45,11 +45,11 @@ statement      -> exprStmt
                | block ;
 returnStmt     -> "return" expression? ";" ;
 forStmt        -> "for" "(" ( varDecl | exprStmt | ; )
-            expression? ";"
-            expression? ")" statement ;
+                expression? ";"
+                expression? ")" statement ;
 whileStmt      -> "while" "(" expression ")" statement ;
 ifStmt         -> "if" "(" expression ")" statement
-            ("else" statement )? ;
+                ("else" statement )? ;
 block          -> "{" declaration* "}" ;
 exprStmt       -> expression ";" ;
 expression     -> assignment;
