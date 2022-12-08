@@ -70,9 +70,7 @@ binary      -> expression operator expression ;
 operator    -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
 primary     -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
             | "(" expression ")"
-            | IDENTIFIER
-            | (array | IDENTIFIER) ( "[" NUMBER "]" ) *
-            | (hash | IDENTIFIER) ( "[" IDENTIFIER "]" ) *
+            | IDENTIFIER;
 array       -> "[" primary ( "," primary  )* ( "," )* "]"
 hash        -> "{" IDENTIFIER ":" primary ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```

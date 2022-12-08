@@ -1,0 +1,15 @@
+fun map(array, fn){
+ var newArr = [];
+ for (var i = 0; i < length(array); i = i + 1 ) {
+   push(newArr, fn(array[i]));
+   }
+  return newArr;
+}
+
+fun double(x) {
+    return x * 2;
+}
+
+var nums = [1, 2, 3];
+print(map(nums, double));
+print("hello");

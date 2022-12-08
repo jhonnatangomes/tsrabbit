@@ -82,7 +82,7 @@ function run(
   const result = interpreter.interpret(statements);
   if (hadRuntimeError && !isRepl) return;
   if (isRepl) {
-    console.log(result ? result[0] || 'nil' : 'nil');
+    console.log(result ? result[0] ?? 'nil' : 'nil');
   }
 }
 

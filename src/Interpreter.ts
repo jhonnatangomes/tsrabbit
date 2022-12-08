@@ -18,9 +18,8 @@ import {
   VariableExpr,
 } from './Expr';
 import { isObject } from './helpers';
-import Clock from './NativeFns/Clock';
-import Print from './NativeFns/Print';
-import Random from './NativeFns/Random';
+import { Clock, Print, Push, Random } from './NativeFns';
+import Length from './NativeFns/Length';
 import RabbitFunction from './RabbitFunction';
 import Return from './Return';
 import RuntimeError from './RuntimeError';
@@ -77,6 +76,8 @@ export default class Interpreter
       this.globals.define('clock', new Clock());
       this.globals.define('print', new Print());
       this.globals.define('random', new Random());
+      this.globals.define('push', new Push());
+      this.globals.define('length', new Length());
     }
   }
 
