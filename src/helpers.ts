@@ -1,4 +1,7 @@
-import { Literal } from './Token';
+import { inspect } from 'util';
+import { Expr } from './Expr';
+import { Stmt } from './Stmt';
+import Token, { Literal } from './Token';
 
 export type Line = {
   number: number;
@@ -22,4 +25,16 @@ export function lineObject(source: string, start: number): Line {
 
 export function isObject(x: unknown): x is Record<string, Literal> {
   return x !== 'null' && typeof x === 'object' && !Array.isArray(x);
+}
+
+export function logNode<T extends Token | Stmt | Expr>(x: T | T[]) {
+  if (Array.isArray(x)) {
+    return console.log(
+      inspect(
+        x.map((v) => v.toString()),
+        { depth: null }
+      )
+    );
+  }
+  console.log(inspect(x.toString(), { depth: null }));
 }

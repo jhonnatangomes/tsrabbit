@@ -44,6 +44,7 @@ const {
   PIPE_PIPE,
   LEFT_BRACKET,
   RIGHT_BRACKET,
+  PIPE,
 } = TokenType;
 
 export default class Scanner {
@@ -151,11 +152,7 @@ export default class Scanner {
         }
         break;
       case '|':
-        if (this.match('|')) {
-          this.addToken(PIPE_PIPE);
-        } else {
-          lineError(lineObject(this.source, this.start), `Expected another |.`);
-        }
+        this.addToken(this.match('|') ? PIPE_PIPE : PIPE);
         break;
       case ' ':
       case '\r':

@@ -31,48 +31,50 @@ The interpreter can be started in REPL mode by just running the executable with 
 This space will be used to specify Rabbit's grammar. It will be updated as I work on it. Without further ado, that is Rabbit's grammar so far:
 
 ```
-program     -> declaration* EOF ;
-declaration -> funDecl | varDecl | statement;
-funDecl     -> "fun" function ;
-function    -> IDENTIFIER "(" parameters? ")" block ;
-parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
-varDecl     -> "var" IDENTIFIER ("=" expression )? ";" ;
-statement   -> exprStmt
-            | ifStmt
-            | forStmt
-            | returnStmt
-            | whileStmt
-            | block ;
-returnStmt  -> "return" expression? ";" ;
-forStmt     -> "for" "(" ( varDecl | exprStmt | ; )
+program        -> declaration* EOF ;
+declaration    -> funDecl | varDecl | statement;
+funDecl        -> "fun" function ;
+function       -> IDENTIFIER "(" parameters? ")" block ;
+parameters     -> IDENTIFIER ( "," IDENTIFIER )* ;
+varDecl        -> "var" IDENTIFIER ("=" expression )? ";" ;
+statement      -> exprStmt
+               | ifStmt
+               | forStmt
+               | returnStmt
+               | whileStmt
+               | block ;
+returnStmt     -> "return" expression? ";" ;
+forStmt        -> "for" "(" ( varDecl | exprStmt | ; )
             expression? ";"
             expression? ")" statement ;
-whileStmt   -> "while" "(" expression ")" statement ;
-ifStmt      -> "if" "(" expression ")" statement
+whileStmt      -> "while" "(" expression ")" statement ;
+ifStmt         -> "if" "(" expression ")" statement
             ("else" statement )? ;
-block       -> "{" declaration* "}" ;
-exprStmt    -> expression ";" ;
-expression  -> assignment;
-assignment  -> IDENTIFIER "=" assignment
-            | ternary;
-ternary     -> logic_or (? expression : expression)* ;
-logic_or    -> logic_and ( "||" logic_and )* ;
-logic_and   -> equality ( "&&" equality )* ;
-equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
-comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term        -> factor ( ( "-" | "+" ) factor )* ;
-factor      -> unary ( ( "/" | "*" ) unary )* ;
-unary       -> ( "-" | "!" ) unary
-            | call ;
-call        -> primary (( "(" arguments? ")" ) * | ( "[" expression "]" ) *) ;
-arguments   -> expression ( "," expression ) *;
-binary      -> expression operator expression ;
-operator    -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
-primary     -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
-            | "(" expression ")"
-            | IDENTIFIER;
-array       -> "[" primary ( "," primary  )* ( "," )* "]"
-hash        -> "{" IDENTIFIER ":" primary ( "," IDENTIFIER ":" primary )* ( "," )* "}"
+block          -> "{" declaration* "}" ;
+exprStmt       -> expression ";" ;
+expression     -> assignment;
+assignment     -> IDENTIFIER "=" assignment
+               | ternary;
+ternary        -> logic_or (? expression : expression)* ;
+logic_or       -> logic_and ( "||" logic_and )* ;
+logic_and      -> equality ( "&&" equality )* ;
+equality       -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           -> factor ( ( "-" | "+" ) factor )* ;
+factor         -> unary ( ( "/" | "*" ) unary )* ;
+unary          -> ( "-" | "!" ) unary
+               | call ;
+functionCall   -> primary ( "(" arguments? ")" ) * ("|" functionCall) * ;
+indexedAccess  -> primary ( "[" expression "]" ) *
+call           -> functionCall | indexedAccess ;
+arguments      -> expression ( "," expression ) *;
+binary         -> expression operator expression ;
+operator       -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
+primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
+               | "(" expression ")"
+               | IDENTIFIER;
+array          -> "[" primary ( "," primary  )* ( "," )* "]"
+hash           -> "{" IDENTIFIER ":" primary ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```
 
 ## Installation

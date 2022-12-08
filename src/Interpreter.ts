@@ -18,7 +18,7 @@ import {
   VariableExpr,
 } from './Expr';
 import { isObject } from './helpers';
-import { Clock, Print, Push, Random } from './NativeFns';
+import { Clock, Map, Print, Push, Random } from './NativeFns';
 import Length from './NativeFns/Length';
 import RabbitFunction from './RabbitFunction';
 import Return from './Return';
@@ -78,6 +78,7 @@ export default class Interpreter
       this.globals.define('random', new Random());
       this.globals.define('push', new Push());
       this.globals.define('length', new Length());
+      this.globals.define('map', new Map());
     }
   }
 

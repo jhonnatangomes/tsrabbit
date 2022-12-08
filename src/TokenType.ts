@@ -14,6 +14,7 @@ export enum TokenType {
   STAR,
   QUESTION,
   COLON,
+  PIPE,
 
   // One or two character tokens.
   BANG,

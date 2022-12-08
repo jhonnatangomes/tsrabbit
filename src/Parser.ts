@@ -66,6 +66,7 @@ const {
   COMMA,
   LEFT_BRACKET,
   RIGHT_BRACKET,
+  PIPE,
 } = TokenType;
 
 export default class Parser {
@@ -349,6 +350,21 @@ export default class Parser {
   }
 
   private finishCall(callee: Expr) {
+    let callExpr = this.singleCall(callee);
+    while (this.match(PIPE)) {
+      const newFn = this.primary();
+      this.consume(
+        LEFT_PAREN,
+        "Expect '(' after function name in pipe expression."
+      );
+      const singleCall = this.singleCall(newFn);
+      singleCall.args.unshift(callExpr);
+      callExpr = singleCall;
+    }
+    return callExpr;
+  }
+
+  singleCall(callee: Expr) {
     const args: Expr[] = [];
     if (!this.check(RIGHT_PAREN)) {
       do {
