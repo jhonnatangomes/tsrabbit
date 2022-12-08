@@ -64,7 +64,7 @@ term        -> factor ( ( "-" | "+" ) factor )* ;
 factor      -> unary ( ( "/" | "*" ) unary )* ;
 unary       -> ( "-" | "!" ) unary
             | call ;
-call        -> primary (( "(" arguments? ")" ) * | ( "[" (NUMBER | IDENTIFIER) "]" ) *) ;
+call        -> primary (( "(" arguments? ")" ) * | ( "[" expression "]" ) *) ;
 arguments   -> expression ( "," expression ) *;
 binary      -> expression operator expression ;
 operator    -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";

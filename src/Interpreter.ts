@@ -172,42 +172,39 @@ export default class Interpreter
   }
   visitIndexAccessExpr(expr: IndexAccessExpr): Literal {
     let variable = this.evaluate(expr.callee);
-    expr.accessors.forEach((accessor) => {
-      const { lexeme: name } = accessor;
+    expr.accessors.forEach((accessor, i) => {
+      const evaluatedAccessor = this.evaluate(accessor);
       if (Array.isArray(variable)) {
-        if (!Number.isNaN(Number(name))) {
-          const value = variable[Number(name)];
-          if (value === undefined)
-            throw new RuntimeError(accessor, `Index ${name} out of range.`);
-          variable = value;
-          return;
-        } else {
-          throw new RuntimeError(
-            accessor,
-            `Cannot access array with non-numerical index.`
-          );
-        }
-      }
-      if (isObject(variable)) {
-        if (Number.isNaN(Number(name))) {
-          const value = variable[name];
+        if (typeof evaluatedAccessor === 'number') {
+          const value = variable[evaluatedAccessor];
           if (value === undefined)
             throw new RuntimeError(
-              accessor,
-              `Key ${name} does not exist in hash.`
+              expr.accessorsTokens[i],
+              `Index ${evaluatedAccessor} out of range.`
             );
-          variable = variable[name];
+          variable = value;
           return;
-        } else {
-          throw new RuntimeError(
-            accessor,
-            `Cannot access hash with numerical index.`
-          );
+        }
+        throw new RuntimeError(
+          expr.accessorsTokens[i],
+          'Cannot access array with non-numerical index.'
+        );
+      }
+      if (isObject(variable)) {
+        if (typeof evaluatedAccessor === 'string') {
+          const value = variable[evaluatedAccessor];
+          if (value === undefined)
+            throw new RuntimeError(
+              expr.accessorsTokens[i],
+              `Key ${evaluatedAccessor} does not exist in hash.`
+            );
+          variable = value;
+          return;
         }
       }
       throw new RuntimeError(
-        accessor,
-        `Cannot access index of non-indexable value.`
+        expr.accessorsTokens[i],
+        `Cannot access hash with non-string index.`
       );
     });
     return variable;

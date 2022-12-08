@@ -327,21 +327,24 @@ export default class Parser {
 
   private call(): Expr {
     let expr = this.primary();
-    const accessors = [];
+    const accessors: Expr[] = [];
+    const accessorsTokens: Token[] = [];
 
     while (true) {
       if (this.match(LEFT_PAREN)) {
         expr = this.finishCall(expr);
       } else if (this.match(LEFT_BRACKET)) {
-        if (this.peek().type === NUMBER || this.peek().type === IDENTIFIER) {
-          accessors.push(this.advance());
+        if (this.peek().type !== RIGHT_BRACKET) {
+          accessorsTokens.push(this.peek());
+          accessors.push(this.expression());
         }
         this.consume(RIGHT_BRACKET, "Expect ']' after indexed access");
       } else {
         break;
       }
     }
-    if (accessors.length !== 0) return new IndexAccessExpr(expr, accessors);
+    if (accessors.length !== 0)
+      return new IndexAccessExpr(expr, accessors, accessorsTokens);
     return expr;
   }
 

@@ -28,7 +28,7 @@ export class BlockStmt implements Stmt {
   }
   toString() {
     return {
-      statements: this.statements.toString(),
+      statements: this.statements.map(v => v.toString()),
     };
   }
 }
@@ -67,8 +67,8 @@ export class FunctionStmt implements Stmt {
   toString() {
     return {
       name: this.name.toString(),
-      params: this.params.toString(),
-      body: this.body.toString(),
+      params: this.params.map(v => v.toString()),
+      body: this.body.map(v => v.toString()),
     };
   }
 }

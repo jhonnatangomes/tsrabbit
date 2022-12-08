@@ -18,7 +18,7 @@ function main() {
       'Call         -> callee: Expr, paren: Token, args: Expr[]',
       'Grouping     -> expression: Expr',
       'HashLiteral  -> value: HashLiteral',
-      'IndexAccess  -> callee: Expr, accessors: Token[]',
+      'IndexAccess  -> callee: Expr, accessors: Expr[], accessorsTokens: Token[]',
       'Literal      -> value: Literal',
       'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',
@@ -94,11 +94,27 @@ function defineType(baseName, className, fieldList) {
   fileContent += `  toString() {\n`;
   fileContent += `    return {\n`;
   fields.map((field) => {
+    if (className === 'ArrayLiteral') {
+      fileContent += `      value: this.value.map((v) => v.toString()),\n`;
+      return;
+    }
+    if (className === 'HashLiteral') {
+      fileContent += `      value: Object.fromEntries(
+        Object.entries(this.value).map(([k, v]) => [k, v.toString()])
+      ),\n`;
+      return;
+    }
     const name = field.split(':')[0].trim();
     const type = field.split(':')[1].trim();
     fileContent += `      ${name}: this.${name}${
       type.includes('null') ? '?' : ''
-    }${type !== 'Literal' ? '.toString()' : ''},\n`;
+    }${
+      type.includes('[]')
+        ? '.map(v => v.toString())'
+        : type !== 'Literal'
+        ? '.toString()'
+        : ''
+    },\n`;
   });
   fileContent += `    };\n`;
   fileContent += `  }\n`;
