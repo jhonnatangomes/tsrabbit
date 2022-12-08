@@ -73,8 +73,8 @@ operator       -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
 primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
                | "(" expression ")"
                | IDENTIFIER;
-array          -> "[" primary ( "," primary  )* ( "," )* "]"
-hash           -> "{" IDENTIFIER ":" primary ( "," IDENTIFIER ":" primary )* ( "," )* "}"
+array          -> "[" expression ( "," primary  )* ( "," )* "]"
+hash           -> "{" IDENTIFIER ":" expression ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```
 
 ## Installation

@@ -404,13 +404,13 @@ export default class Parser {
 
   private array(): ArrayLiteralExpr {
     if (this.match(RIGHT_BRACKET)) return new ArrayLiteralExpr([]);
-    const firstEl = this.primary();
+    const firstEl = this.expression();
     const arr = [];
     arr.push(firstEl);
     while (!this.match(RIGHT_BRACKET) && !this.isAtEnd()) {
       this.consume(COMMA, "Expect ',' after element in array literal.");
       if (this.peek().type !== RIGHT_BRACKET) {
-        const newEl = this.primary();
+        const newEl = this.expression();
         arr.push(newEl);
       }
     }
@@ -446,7 +446,7 @@ export default class Parser {
       'Expect key name in new element of map.'
     );
     this.consume(TokenType.COLON, "Expect ':' after key name in map element.");
-    const value = this.primary();
+    const value = this.expression();
     return { [key.lexeme]: value };
   }
   private synchronize() {
