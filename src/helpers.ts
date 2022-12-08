@@ -1,3 +1,5 @@
+import { Literal } from './Token';
+
 export type Line = {
   number: number;
   column: number;
@@ -16,4 +18,8 @@ export function lineObject(source: string, start: number): Line {
     line: source.split('\n').at(lineNumber - 1) || '',
     column,
   };
+}
+
+export function isObject(x: unknown): x is Record<string, Literal> {
+  return x !== 'null' && typeof x === 'object' && !Array.isArray(x);
 }

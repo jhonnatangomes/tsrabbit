@@ -9,6 +9,7 @@ export interface ExprVisitor<R> {
   visitCallExpr: (expr: CallExpr) => R;
   visitGroupingExpr: (expr: GroupingExpr) => R;
   visitHashLiteralExpr: (expr: HashLiteralExpr) => R;
+  visitIndexAccessExpr: (expr: IndexAccessExpr) => R;
   visitLiteralExpr: (expr: LiteralExpr) => R;
   visitLogicalExpr: (expr: LogicalExpr) => R;
   visitTernaryExpr: (expr: TernaryExpr) => R;
@@ -134,6 +135,26 @@ export class HashLiteralExpr implements Expr {
   toString() {
     return {
       value: this.value.toString(),
+    };
+  }
+}
+
+export class IndexAccessExpr implements Expr {
+  callee: Expr;
+  accessors: Token[];
+
+  constructor(callee: Expr, accessors: Token[]) {
+    this.callee = callee;
+    this.accessors = accessors;
+  }
+
+  accept<R>(visitor: ExprVisitor<R>): R {
+    return visitor.visitIndexAccessExpr(this);
+  }
+  toString() {
+    return {
+      callee: this.callee.toString(),
+      accessors: this.accessors.toString(),
     };
   }
 }

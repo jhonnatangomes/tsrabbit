@@ -10,12 +10,14 @@ import {
   ExprVisitor,
   GroupingExpr,
   HashLiteralExpr,
+  IndexAccessExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
   UnaryExpr,
   VariableExpr,
 } from './Expr';
+import { isObject } from './helpers';
 import Clock from './NativeFns/Clock';
 import Print from './NativeFns/Print';
 import Random from './NativeFns/Random';
@@ -166,6 +168,48 @@ export default class Interpreter
       Object.entries(expr.value).map(([k, v]) => [k, this.evaluate(v)])
     );
     return hashValues;
+  }
+  visitIndexAccessExpr(expr: IndexAccessExpr): Literal {
+    let variable = this.evaluate(expr.callee);
+    expr.accessors.forEach((accessor) => {
+      const { lexeme: name } = accessor;
+      if (Array.isArray(variable)) {
+        if (!Number.isNaN(Number(name))) {
+          const value = variable[Number(name)];
+          if (value === undefined)
+            throw new RuntimeError(accessor, `Index ${name} out of range.`);
+          variable = value;
+          return;
+        } else {
+          throw new RuntimeError(
+            accessor,
+            `Cannot access array with non-numerical index.`
+          );
+        }
+      }
+      if (isObject(variable)) {
+        if (Number.isNaN(Number(name))) {
+          const value = variable[name];
+          if (value === undefined)
+            throw new RuntimeError(
+              accessor,
+              `Key ${name} does not exist in hash.`
+            );
+          variable = variable[name];
+          return;
+        } else {
+          throw new RuntimeError(
+            accessor,
+            `Cannot access hash with numerical index.`
+          );
+        }
+      }
+      throw new RuntimeError(
+        accessor,
+        `Cannot access index of non-indexable value.`
+      );
+    });
+    return variable;
   }
 
   visitExpressionStmt(stmt: ExpressionStmt): Literal {

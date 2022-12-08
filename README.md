@@ -73,8 +73,8 @@ primary     -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
             | IDENTIFIER
             | (array | IDENTIFIER) ( "[" NUMBER "]" ) *
             | (hash | IDENTIFIER) ( "[" IDENTIFIER "]" ) *
-array       -> "["  ( primary "," )* ( primary )* "]"
-hash        -> "{" ( IDENTIFIER ":" primary "," )* ( IDENTIFIER ":" primary )* "}"
+array       -> "[" primary ( "," primary  )* ( "," )* "]"
+hash        -> "{" IDENTIFIER ":" primary ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```
 
 ## Installation

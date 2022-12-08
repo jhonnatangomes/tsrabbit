@@ -7,7 +7,6 @@ export enum TokenType {
   LEFT_BRACE,
   RIGHT_BRACE,
   COMMA,
-  DOT,
   MINUS,
   PLUS,
   SEMICOLON,
@@ -41,9 +40,7 @@ export enum TokenType {
 
   // Keywords.
   AND,
-  CLASS,
   ELSE,
-  EXTENDS,
   FALSE,
   FUN,
   FOR,
@@ -51,8 +48,6 @@ export enum TokenType {
   NIL,
   OR,
   RETURN,
-  SUPER,
-  THIS,
   TRUE,
   VAR,
   WHILE,

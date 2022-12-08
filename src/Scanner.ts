@@ -10,7 +10,6 @@ const {
   RIGHT_BRACE,
   RIGHT_PAREN,
   COMMA,
-  DOT,
   MINUS,
   PLUS,
   SEMICOLON,
@@ -28,7 +27,6 @@ const {
   NUMBER,
   IDENTIFIER,
   AND,
-  CLASS,
   ELSE,
   FALSE,
   FOR,
@@ -37,12 +35,9 @@ const {
   NIL,
   OR,
   RETURN,
-  SUPER,
-  THIS,
   TRUE,
   VAR,
   WHILE,
-  EXTENDS,
   QUESTION,
   COLON,
   AMPERSAND_AMPERSAND,
@@ -58,8 +53,6 @@ export default class Scanner {
   private current = 0;
   private static keywords: Record<string, TokenType> = {
     and: AND,
-    class: CLASS,
-    extends: EXTENDS,
     else: ELSE,
     false: FALSE,
     for: FOR,
@@ -68,8 +61,6 @@ export default class Scanner {
     nil: NIL,
     or: OR,
     return: RETURN,
-    super: SUPER,
-    this: THIS,
     true: TRUE,
     var: VAR,
     while: WHILE,
@@ -114,9 +105,6 @@ export default class Scanner {
         break;
       case ',':
         this.addToken(COMMA);
-        break;
-      case '.':
-        this.addToken(DOT);
         break;
       case '-':
         this.addToken(MINUS);

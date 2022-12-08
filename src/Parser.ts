@@ -7,6 +7,7 @@ import {
   Expr,
   GroupingExpr,
   HashLiteralExpr,
+  IndexAccessExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
@@ -47,7 +48,6 @@ const {
   GREATER,
   GREATER_EQUAL,
   SEMICOLON,
-  CLASS,
   FUN,
   VAR,
   FOR,
@@ -327,14 +327,21 @@ export default class Parser {
 
   private call(): Expr {
     let expr = this.primary();
+    const accessors = [];
 
     while (true) {
       if (this.match(LEFT_PAREN)) {
         expr = this.finishCall(expr);
+      } else if (this.match(LEFT_BRACKET)) {
+        if (this.peek().type === NUMBER || this.peek().type === IDENTIFIER) {
+          accessors.push(this.advance());
+        }
+        this.consume(RIGHT_BRACKET, "Expect ']' after indexed access");
       } else {
         break;
       }
     }
+    if (accessors.length !== 0) return new IndexAccessExpr(expr, accessors);
     return expr;
   }
 
@@ -388,7 +395,7 @@ export default class Parser {
         arr.push(newEl);
       }
     }
-    if (this.isAtEnd()) {
+    if (this.isAtEnd() && this.previous().type !== RIGHT_BRACKET) {
       throw this.error(this.peek(), 'Unterminated array.');
     }
     return new ArrayLiteralExpr(arr);
@@ -406,7 +413,7 @@ export default class Parser {
         hashes.push(newEl);
       }
     }
-    if (this.isAtEnd()) {
+    if (this.isAtEnd() && this.previous().type !== RIGHT_BRACE) {
       throw this.error(this.peek(), 'Unterminated hash.');
     }
     return new HashLiteralExpr(
@@ -430,7 +437,6 @@ export default class Parser {
       if (this.previous().type == SEMICOLON) return;
 
       switch (this.peek().type) {
-        case CLASS:
         case FUN:
         case VAR:
         case FOR:
