@@ -14,7 +14,7 @@ export default class Slice extends Callable {
     if (typeof args[1] !== 'number' || !Number.isInteger(args[1])) {
       throw new RuntimeError(token, 'Second parameter should be an integer.');
     }
-    if (typeof args[2] !== 'number' || Number.isInteger(args[2])) {
+    if (typeof args[2] !== 'number' || !Number.isInteger(args[2])) {
       throw new RuntimeError(token, 'Third parameter should be an integer.');
     }
     const [array, start, end] = args;

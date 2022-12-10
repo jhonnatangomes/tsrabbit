@@ -22,8 +22,11 @@ export default class RabbitFunction extends Callable {
     }
     try {
       interpreter.executeBlock(this.declaration.body, environment);
-    } catch (returnValue) {
-      return (returnValue as Return).value;
+    } catch (error) {
+      if ('value' in (error as object)) {
+        return (error as Return).value;
+      }
+      throw error;
     }
     return null;
   }

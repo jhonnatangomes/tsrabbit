@@ -5,14 +5,6 @@ var unorderedArr = [
   -859,  667,  -65, -479
 ];
 
-fun slice(arr, start, end) {
-  var newArr = [];
-  for (var i = start; i < end; i = i + 1) {
-    push(newArr, arr[i]);
-  }
-  return newArr;
-}
-
 fun merge(arr, arr2) {
   var newArr = [];
   while (length(arr) != 0 && length(arr2) != 0) {

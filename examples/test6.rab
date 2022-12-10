@@ -1,0 +1,4 @@
+fun fn(x){
+    return x;
+}
+print(fn(5));

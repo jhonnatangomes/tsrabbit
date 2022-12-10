@@ -30,6 +30,20 @@ export default class Environment {
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
   }
 
+  getAt(distance: number, name: Token): Literal {
+    const value = this.ancestor(distance)?.values[name.lexeme];
+    if (value !== undefined) return value;
+    throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
+  }
+
+  ancestor(distance: number) {
+    let environment: Environment | null | undefined = this;
+    for (let i = 0; i < distance; i++) {
+      environment = environment?.enclosing;
+    }
+    return environment;
+  }
+
   assign(name: Token, value: Literal) {
     if (this.values[name.lexeme] !== undefined) {
       this.values[name.lexeme] = value;
@@ -40,5 +54,12 @@ export default class Environment {
       return;
     }
     throw new RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
+  }
+
+  assignAt(distance: number, name: Token, value: Literal) {
+    const environment = this.ancestor(distance);
+    if (environment) {
+      environment.values[name.lexeme] = value;
+    }
   }
 }

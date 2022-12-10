@@ -23,7 +23,7 @@ import {
   Clock,
   Filter,
   Length,
-  Map,
+  Map as MapBuiltin,
   Print,
   Push,
   Random,
@@ -70,6 +70,7 @@ export default class Interpreter
   source: string;
   globals: Environment = new Environment();
   environment: Environment = this.globals;
+  private locals = new Map<Expr, number>();
 
   interpret = (statements: Stmt[]) => {
     try {
@@ -90,12 +91,16 @@ export default class Interpreter
       this.globals.define('random', new Random());
       this.globals.define('push', new Push());
       this.globals.define('length', new Length());
-      this.globals.define('map', new Map());
+      this.globals.define('map', new MapBuiltin());
       this.globals.define('range', new Range());
       this.globals.define('reduce', new Reduce());
       this.globals.define('filter', new Filter());
       this.globals.define('slice', new Slice());
     }
+  }
+
+  resolve(expr: Expr, depth: number) {
+    this.locals.set(expr, depth);
   }
 
   private execute(stmt: Stmt) {
@@ -245,25 +250,25 @@ export default class Interpreter
     return null;
   }
   visitForInStmt(stmt: ForInStmt): Literal {
-    const { initializers, iterable, body } = stmt;
+    const { initializerTokens, initializers, iterable, body } = stmt;
     const outerEnvironment = this.environment;
     this.environment = new Environment(outerEnvironment);
-    if (initializers.length === 2) {
-      this.environment.define(initializers[1], 0);
+    if (initializerTokens.length === 2) {
+      this.environment.define(initializerTokens[1], 0);
     }
     const expression = this.evaluate(iterable);
     if (!Array.isArray(expression)) {
       throw new RuntimeError(
-        initializers[0],
+        initializerTokens[0],
         'Expression in for in loop needs to be an array.'
       );
     }
-    this.environment.define(initializers[0], expression[0]);
+    this.environment.define(initializerTokens[0], expression[0]);
     expression.forEach((el, i) => {
-      this.environment.assign(initializers[0], el);
+      this.environment.assign(initializerTokens[0], el);
       this.execute(body);
-      if (initializers.length === 2) {
-        this.environment.assign(initializers[1], i + 1);
+      if (initializerTokens.length === 2) {
+        this.environment.assign(initializerTokens[1], i + 1);
       }
     });
     this.environment = outerEnvironment;
@@ -273,12 +278,26 @@ export default class Interpreter
     return typeof x === 'number' && Number.isInteger(x);
   }
   visitVariableExpr(expr: VariableExpr): Literal {
-    return this.environment.get(expr.name);
+    return this.lookupVariable(expr.name, expr);
+  }
+
+  private lookupVariable(name: Token, expr: Expr): Literal {
+    const distance = this.locals.get(expr);
+    if (distance !== undefined) {
+      return this.environment.getAt(distance, name);
+    } else {
+      return this.globals.get(name);
+    }
   }
 
   visitAssignExpr(expr: AssignExpr): Literal {
     const value = this.evaluate(expr.value);
-    this.environment.assign(expr.name, value);
+    const distance = this.locals.get(expr);
+    if (distance !== undefined) {
+      this.environment.assignAt(distance, expr.name, value);
+    } else {
+      this.globals.assign(expr.name, value);
+    }
     return value;
   }
 

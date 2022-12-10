@@ -4,5 +4,5 @@ fun fibonnaci(n) {
   return fibonnaci(n - 1) + fibonnaci(n-2);
 }
 clock();
-fibonnaci(20);
+fibonnaci(30);
 print(clock());
