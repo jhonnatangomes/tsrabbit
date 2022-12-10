@@ -33,6 +33,7 @@ export enum TokenType {
   SLASH_EQUAL,
   PIPE_PIPE,
   AMPERSAND_AMPERSAND,
+  ARROW,
 
   // Literals.
   IDENTIFIER,

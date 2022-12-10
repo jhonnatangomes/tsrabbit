@@ -11,6 +11,7 @@ import {
   GroupingExpr,
   HashLiteralExpr,
   IndexAccessExpr,
+  LambdaExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
@@ -211,6 +212,10 @@ export default class Interpreter
       );
     });
     return variable;
+  }
+
+  visitLambdaExpr(expr: LambdaExpr): Literal {
+    return new RabbitFunction(expr, this.environment);
   }
 
   visitExpressionStmt(stmt: ExpressionStmt): Literal {

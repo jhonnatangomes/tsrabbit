@@ -73,9 +73,10 @@ call           -> functionCall | indexedAccess ;
 arguments      -> expression ( "," expression ) *;
 binary         -> expression operator expression ;
 operator       -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
-primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash
+primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash | lambda
                | "(" expression ")"
                | IDENTIFIER;
+lambda         -> "|" parameters? ")" "=>" ( block | expression );
 array          -> "[" expression ( "," primary  )* ( "," )* "]"
 hash           -> "{" IDENTIFIER ":" expression ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```

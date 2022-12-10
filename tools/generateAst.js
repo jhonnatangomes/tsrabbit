@@ -19,6 +19,7 @@ function main() {
       'Grouping     -> expression: Expr',
       'HashLiteral  -> value: HashLiteral',
       'IndexAccess  -> callee: Expr, accessors: Expr[], accessorsTokens: Token[]',
+      'Lambda       -> params: Token[], body: Stmt[], code: string',
       'Literal      -> value: Literal',
       'Logical      -> left: Expr, operator: Token, right: Expr',
       'Ternary      -> condition: Expr, trueBranch: Expr, falseBranch: Expr',

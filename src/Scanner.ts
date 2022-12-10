@@ -47,6 +47,7 @@ const {
   PIPE,
   IN,
   RANGE,
+  ARROW,
 } = TokenType;
 
 export default class Scanner {
@@ -127,7 +128,9 @@ export default class Scanner {
         this.addToken(this.match('=') ? BANG_EQUAL : BANG);
         break;
       case '=':
-        this.addToken(this.match('=') ? EQUAL_EQUAL : EQUAL);
+        this.addToken(
+          this.match('=') ? EQUAL_EQUAL : this.match('>') ? ARROW : EQUAL
+        );
         break;
       case '<':
         this.addToken(this.match('=') ? LESS_EQUAL : LESS);

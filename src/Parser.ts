@@ -8,6 +8,7 @@ import {
   GroupingExpr,
   HashLiteralExpr,
   IndexAccessExpr,
+  LambdaExpr,
   LiteralExpr,
   LogicalExpr,
   TernaryExpr,
@@ -71,6 +72,7 @@ const {
   PIPE,
   IN,
   RANGE,
+  ARROW,
 } = TokenType;
 
 export default class Parser {
@@ -453,7 +455,51 @@ export default class Parser {
     if (this.match(LEFT_BRACE)) {
       return this.hash();
     }
+    if (this.match(PIPE)) {
+      return this.lambda();
+    }
     throw this.error(this.peek(), 'Expect expression.');
+  }
+
+  private lambda(): LambdaExpr {
+    const openingPipe = this.previous();
+    const params: Token[] = [];
+    if (!this.check(PIPE)) {
+      do {
+        if (params.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 parameters.");
+        }
+        params.push(this.consume(IDENTIFIER, 'Expect parameter name.'));
+      } while (this.match(COMMA));
+    }
+    this.consume(PIPE, "Expect '|' after parameters in lambda expression.");
+    this.consume(ARROW, "Expect '=>' after parameters in lambda expression.");
+    if (this.match(LEFT_BRACE)) {
+      const body = this.block();
+      const finalBrace = this.previous();
+      return new LambdaExpr(
+        params,
+        body,
+        this.source.substring(
+          openingPipe.position.start,
+          finalBrace.position.end + 1
+        )
+      );
+    }
+    const returnValue = this.expression();
+    const expressionToken = this.previous();
+    const body = new ReturnStmt(
+      new Token(RETURN, 'return', { start: -100, end: -100 }),
+      returnValue
+    );
+    return new LambdaExpr(
+      params,
+      [body],
+      this.source.substring(
+        openingPipe.position.start,
+        expressionToken.position.end + 1
+      )
+    );
   }
 
   private array(): ArrayLiteralExpr {

@@ -1,14 +1,15 @@
 import { Callable } from './Callable';
 import Environment from './Environment';
+import { LambdaExpr } from './Expr';
 import Interpreter from './Interpreter';
 import Return from './Return';
 import { FunctionStmt } from './Stmt';
 import { Literal } from './Token';
 
 export default class RabbitFunction extends Callable {
-  declaration: FunctionStmt;
+  declaration: FunctionStmt | LambdaExpr;
   private closure: Environment;
-  constructor(declaration: FunctionStmt, closure: Environment) {
+  constructor(declaration: FunctionStmt | LambdaExpr, closure: Environment) {
     super();
     this.closure = closure;
     this.declaration = declaration;
