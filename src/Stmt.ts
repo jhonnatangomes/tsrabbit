@@ -4,8 +4,10 @@ import Token from './Token';
 export interface StmtVisitor<R> {
   visitBlockStmt: (stmt: BlockStmt) => R;
   visitExpressionStmt: (stmt: ExpressionStmt) => R;
+  visitForInStmt: (stmt: ForInStmt) => R;
   visitFunctionStmt: (stmt: FunctionStmt) => R;
   visitIfStmt: (stmt: IfStmt) => R;
+  visitRangeStmt: (stmt: RangeStmt) => R;
   visitReturnStmt: (stmt: ReturnStmt) => R;
   visitWhileStmt: (stmt: WhileStmt) => R;
   visitVarStmt: (stmt: VarStmt) => R;
@@ -46,6 +48,29 @@ export class ExpressionStmt implements Stmt {
   toString() {
     return {
       expression: this.expression.toString(),
+    };
+  }
+}
+
+export class ForInStmt implements Stmt {
+  initializers: Token[];
+  iterable: Expr;
+  body: Stmt;
+
+  constructor(initializers: Token[], iterable: Expr, body: Stmt) {
+    this.initializers = initializers;
+    this.iterable = iterable;
+    this.body = body;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitForInStmt(this);
+  }
+  toString() {
+    return {
+      initializers: this.initializers.map(v => v.toString()),
+      iterable: this.iterable.toString(),
+      body: this.body.toString(),
     };
   }
 }
@@ -92,6 +117,29 @@ export class IfStmt implements Stmt {
       condition: this.condition.toString(),
       thenBranch: this.thenBranch.toString(),
       elseBranch: this.elseBranch?.toString(),
+    };
+  }
+}
+
+export class RangeStmt implements Stmt {
+  initializer: Token;
+  iterable: Expr;
+  body: Stmt;
+
+  constructor(initializer: Token, iterable: Expr, body: Stmt) {
+    this.initializer = initializer;
+    this.iterable = iterable;
+    this.body = body;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitRangeStmt(this);
+  }
+  toString() {
+    return {
+      initializer: this.initializer.toString(),
+      iterable: this.iterable.toString(),
+      body: this.body.toString(),
     };
   }
 }

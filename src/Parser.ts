@@ -17,8 +17,10 @@ import {
 import {
   BlockStmt,
   ExpressionStmt,
+  ForInStmt,
   FunctionStmt,
   IfStmt,
+  RangeStmt,
   ReturnStmt,
   Stmt,
   VarStmt,
@@ -67,6 +69,8 @@ const {
   LEFT_BRACKET,
   RIGHT_BRACKET,
   PIPE,
+  IN,
+  RANGE,
 } = TokenType;
 
 export default class Parser {
@@ -152,6 +156,49 @@ export default class Parser {
   }
 
   private forStatement(): Stmt {
+    if (this.peek().type === LEFT_PAREN) return this.longForStatement();
+    return this.rangeForStatement();
+  }
+
+  private rangeForStatement(): Stmt {
+    const arrElement = this.consume(
+      IDENTIFIER,
+      'Expect variable name or parentheses after for keyword.'
+    );
+    let index = null;
+    if (this.match(COMMA)) {
+      index = this.consume(
+        IDENTIFIER,
+        'Expect variable name after comma in for range loop.'
+      );
+    }
+    this.consume(IN, "Expect 'in' keyword after variables in for range loop.");
+    if (this.match(RANGE)) {
+      if (index !== null) {
+        this.error(
+          index,
+          'A single variable should be declared in for range loops.'
+        );
+      }
+      this.consume(LEFT_PAREN, "Expect '(' after range keyword.");
+      const rangeNumber = this.expression();
+      this.consume(
+        RIGHT_PAREN,
+        "Expect ')' after expression in range keyword."
+      );
+      const statement = this.statement();
+      return new RangeStmt(arrElement, rangeNumber, statement);
+    }
+    const iterable = this.expression();
+    const statement = this.statement();
+    const initializers = [arrElement];
+    if (index !== null) {
+      initializers.push(index);
+    }
+    return new ForInStmt(initializers, iterable, statement);
+  }
+
+  private longForStatement(): Stmt {
     this.consume(LEFT_PAREN, "Expect '(' after 'for'.");
     let initializer: Stmt | null = null;
     if (this.match(SEMICOLON)) {
@@ -453,7 +500,7 @@ export default class Parser {
     this.advance();
 
     while (!this.isAtEnd()) {
-      if (this.previous().type == SEMICOLON) return;
+      if (this.previous().type === SEMICOLON) return;
 
       switch (this.peek().type) {
         case FUN:

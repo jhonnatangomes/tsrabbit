@@ -26,8 +26,10 @@ import RuntimeError from './RuntimeError';
 import {
   BlockStmt,
   ExpressionStmt,
+  ForInStmt,
   FunctionStmt,
   IfStmt,
+  RangeStmt,
   ReturnStmt,
   Stmt,
   StmtVisitor,
@@ -224,7 +226,53 @@ export default class Interpreter
     this.environment.define(stmt.name, value);
     return null;
   }
-
+  visitForInStmt(stmt: ForInStmt): Literal {
+    const { initializers, iterable, body } = stmt;
+    const outerEnvironment = this.environment;
+    this.environment = new Environment(outerEnvironment);
+    if (initializers.length === 2) {
+      this.environment.define(initializers[1], 0);
+    }
+    const expression = this.evaluate(iterable);
+    if (!Array.isArray(expression)) {
+      throw new RuntimeError(
+        initializers[0],
+        'Expression in for in loop needs to be an array.'
+      );
+    }
+    this.environment.define(initializers[0], expression[0]);
+    expression.forEach((el, i) => {
+      this.environment.assign(initializers[0], el);
+      this.execute(body);
+      if (initializers.length === 2) {
+        this.environment.assign(initializers[1], i + 1);
+      }
+    });
+    this.environment = outerEnvironment;
+    return null;
+  }
+  isIntegerNumber(x: unknown): x is number {
+    return typeof x === 'number' && Number.isInteger(x);
+  }
+  visitRangeStmt(stmt: RangeStmt): Literal {
+    const { initializer, iterable, body } = stmt;
+    const outerEnvironment = this.environment;
+    this.environment = new Environment(outerEnvironment);
+    const expression = this.evaluate(iterable);
+    if (!this.isIntegerNumber(expression)) {
+      throw new RuntimeError(
+        initializer,
+        'Expression in for range loop needs to be an integer number.'
+      );
+    }
+    this.environment.define(initializer, 0);
+    for (let i = 0; i < expression; i++) {
+      this.environment.assign(initializer, i);
+      this.execute(body);
+    }
+    this.environment = outerEnvironment;
+    return null;
+  }
   visitVariableExpr(expr: VariableExpr): Literal {
     return this.environment.get(expr.name);
   }

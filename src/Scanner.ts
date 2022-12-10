@@ -45,6 +45,8 @@ const {
   LEFT_BRACKET,
   RIGHT_BRACKET,
   PIPE,
+  IN,
+  RANGE,
 } = TokenType;
 
 export default class Scanner {
@@ -59,8 +61,10 @@ export default class Scanner {
     for: FOR,
     fun: FUN,
     if: IF,
+    in: IN,
     nil: NIL,
     or: OR,
+    range: RANGE,
     return: RETURN,
     true: TRUE,
     var: VAR,

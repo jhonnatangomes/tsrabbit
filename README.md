@@ -44,7 +44,10 @@ statement      -> exprStmt
                | whileStmt
                | block ;
 returnStmt     -> "return" expression? ";" ;
-forStmt        -> "for" "(" ( varDecl | exprStmt | ; )
+forStmt        -> longFor | rangeFor ;
+rangeFor       -> "for" IDENTIFIER ("," IDENTIFIER) * "in"
+               ("range" "(" expression ")" | expression) statement;
+longFor        -> "for" "(" ( varDecl | exprStmt | ; )
                 expression? ";"
                 expression? ")" statement ;
 whileStmt      -> "while" "(" expression ")" statement ;
