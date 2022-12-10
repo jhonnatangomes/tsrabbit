@@ -191,7 +191,12 @@ export default class Parser {
     if (index !== null) {
       initializers.push(index);
     }
-    return new ForInStmt(initializers, iterable, statement);
+    return new ForInStmt(
+      initializers,
+      initializers.map((initializer) => new VariableExpr(initializer)),
+      iterable,
+      statement
+    );
   }
 
   private longForStatement(): Stmt {

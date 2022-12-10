@@ -52,11 +52,13 @@ export class ExpressionStmt implements Stmt {
 }
 
 export class ForInStmt implements Stmt {
-  initializers: Token[];
+  initializerTokens: Token[];
+  initializers: Expr[];
   iterable: Expr;
   body: Stmt;
 
-  constructor(initializers: Token[], iterable: Expr, body: Stmt) {
+  constructor(initializerTokens: Token[], initializers: Expr[], iterable: Expr, body: Stmt) {
+    this.initializerTokens = initializerTokens;
     this.initializers = initializers;
     this.iterable = iterable;
     this.body = body;
@@ -67,6 +69,7 @@ export class ForInStmt implements Stmt {
   }
   toString() {
     return {
+      initializerTokens: this.initializerTokens.map(v => v.toString()),
       initializers: this.initializers.map(v => v.toString()),
       iterable: this.iterable.toString(),
       body: this.body.toString(),

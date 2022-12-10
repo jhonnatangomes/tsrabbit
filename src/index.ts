@@ -5,6 +5,7 @@ import Environment from './Environment';
 import { hadError, hadRuntimeError, resetError } from './Error';
 import { logNode } from './helpers';
 import Interpreter from './Interpreter';
+import Resolver from './Resolver';
 import Parser from './Parser';
 import Scanner from './Scanner';
 type Flag = typeof VALID_FLAGS[number];
@@ -72,6 +73,9 @@ function run(
   }
   if (hadError) return;
   const interpreter = new Interpreter(source, environment || new Environment());
+  const resolver = new Resolver(interpreter, source);
+  resolver.resolveStmt(statements);
+  if (hadError) return;
   const result = interpreter.interpret(statements);
   if (hadRuntimeError && !isRepl) return;
   if (isRepl) {
