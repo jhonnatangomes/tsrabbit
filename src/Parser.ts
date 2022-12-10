@@ -77,6 +77,7 @@ export default class Parser {
   tokens: Token[];
   source: string;
   private current = 0;
+  private isInsideFunction = false;
   constructor(tokens: Token[], source: string) {
     this.tokens = tokens;
     this.source = source;
@@ -105,6 +106,7 @@ export default class Parser {
   }
 
   private function() {
+    this.isInsideFunction = true;
     const fun = this.previous();
     const name = this.consume(IDENTIFIER, `Expect function name.`);
     this.consume(LEFT_PAREN, `Expect '(' after function name.`);
@@ -121,6 +123,7 @@ export default class Parser {
     this.consume(LEFT_BRACE, "Expect '{' before function body");
     const body = this.block();
     const finalBrace = this.previous();
+    this.isInsideFunction = false;
     return new FunctionStmt(
       name,
       params,
@@ -159,6 +162,8 @@ export default class Parser {
       value = this.expression();
     }
     this.consume(SEMICOLON, "Expect ';' after return value.");
+    if (!this.isInsideFunction)
+      this.error(keyword, "Can't call return in top level code.");
     return new ReturnStmt(keyword, value);
   }
 
@@ -444,6 +449,7 @@ export default class Parser {
   }
 
   private lambda(): LambdaExpr {
+    this.isInsideFunction = true;
     const openingPipe = this.previous();
     const params: Token[] = [];
     if (!this.check(PIPE)) {
@@ -459,6 +465,7 @@ export default class Parser {
     if (this.match(LEFT_BRACE)) {
       const body = this.block();
       const finalBrace = this.previous();
+      this.isInsideFunction = false;
       return new LambdaExpr(
         params,
         body,
@@ -474,6 +481,7 @@ export default class Parser {
       new Token(RETURN, 'return', { start: -100, end: -100 }),
       returnValue
     );
+    this.isInsideFunction = false;
     return new LambdaExpr(
       params,
       [body],
