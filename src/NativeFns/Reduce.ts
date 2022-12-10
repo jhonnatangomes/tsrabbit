@@ -5,7 +5,7 @@ import RabbitFunction from '../RabbitFunction';
 import RuntimeError from '../RuntimeError';
 import Token, { Literal } from '../Token';
 
-export default class Map extends Callable {
+export default class Reduce extends Callable {
   arity() {
     return 2;
   }
@@ -17,14 +17,17 @@ export default class Map extends Callable {
       throw new RuntimeError(token, 'Second parameter should be a function.');
     }
     const [array, fn] = args;
-    if (fn.arity() < 1 || fn.arity() > 2) {
+    if (fn.arity() < 2 || fn.arity() > 3) {
       throw new RuntimeError(
         token,
-        'Callback function needs to have 1 or 2 parameters.'
+        'Callback function needs to have 2 or 3 parameters.'
       );
     }
-    return array.map((v, i) =>
-      fn.call(interpreter, [v, fn.arity() === 2 && i].filter(isNotFalse))
+    return array.reduce((prev, acc, i) =>
+      fn.call(
+        interpreter,
+        [prev, acc, fn.arity() === 3 && i].filter(isNotFalse)
+      )
     );
   }
 }

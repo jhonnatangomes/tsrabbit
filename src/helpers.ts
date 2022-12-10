@@ -38,3 +38,7 @@ export function logNode<T extends Token | Stmt | Expr>(x: T | T[]) {
   }
   console.log(inspect(x.toString(), { depth: null }));
 }
+
+export function isNotFalse(x: unknown) {
+  return x !== false;
+}

@@ -5,7 +5,7 @@ import RabbitFunction from '../RabbitFunction';
 import RuntimeError from '../RuntimeError';
 import Token, { Literal } from '../Token';
 
-export default class Map extends Callable {
+export default class Filter extends Callable {
   arity() {
     return 2;
   }
@@ -23,7 +23,7 @@ export default class Map extends Callable {
         'Callback function needs to have 1 or 2 parameters.'
       );
     }
-    return array.map((v, i) =>
+    return array.filter((v, i) =>
       fn.call(interpreter, [v, fn.arity() === 2 && i].filter(isNotFalse))
     );
   }

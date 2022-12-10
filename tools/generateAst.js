@@ -27,6 +27,7 @@ function main() {
       'Variable     -> name: Token',
     ],
     [
+      "import { Stmt } from './Stmt';",
       "import Token, { Literal } from './Token';",
       '\ntype HashLiteral = Record<string, Expr>',
     ]
@@ -40,7 +41,6 @@ function main() {
       'ForIn        -> initializers: Token[], iterable: Expr, body: Stmt',
       'Function     -> name: Token, params: Token[], body: Stmt[], code: string',
       'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
-      'Range        -> initializer: Token, iterable: Expr, body: Stmt',
       'Return       -> keyword: Token, value: Expr | null',
       'While        -> condition: Expr, body: Stmt',
       'Var          -> name: Token, initializer: Expr | null',

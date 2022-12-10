@@ -1,7 +1,7 @@
 import { Stmt } from './Stmt';
 import Token, { Literal } from './Token';
 
-type HashLiteral = Record<string, Expr>;
+type HashLiteral = Record<string, Expr>
 
 export interface ExprVisitor<R> {
   visitArrayLiteralExpr: (expr: ArrayLiteralExpr) => R;
@@ -102,7 +102,7 @@ export class CallExpr implements Expr {
     return {
       callee: this.callee.toString(),
       paren: this.paren.toString(),
-      args: this.args.map((v) => v.toString()),
+      args: this.args.map(v => v.toString()),
     };
   }
 }
@@ -160,8 +160,8 @@ export class IndexAccessExpr implements Expr {
   toString() {
     return {
       callee: this.callee.toString(),
-      accessors: this.accessors.map((v) => v.toString()),
-      accessorsTokens: this.accessorsTokens.map((v) => v.toString()),
+      accessors: this.accessors.map(v => v.toString()),
+      accessorsTokens: this.accessorsTokens.map(v => v.toString()),
     };
   }
 }
@@ -182,8 +182,8 @@ export class LambdaExpr implements Expr {
   }
   toString() {
     return {
-      params: this.params.map((v) => v.toString()),
-      body: this.body.map((v) => v.toString()),
+      params: this.params.map(v => v.toString()),
+      body: this.body.map(v => v.toString()),
       code: this.code.toString(),
     };
   }
@@ -288,3 +288,4 @@ export class VariableExpr implements Expr {
     };
   }
 }
+

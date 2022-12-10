@@ -22,8 +22,11 @@ export default class Print extends Callable {
       }
       return text;
     }
-    if (value instanceof RabbitFunction) {
-      return value.declaration.code;
+    if (value instanceof Callable) {
+      if (value instanceof RabbitFunction) {
+        return value.declaration.code;
+      }
+      return value.code;
     }
 
     return value;

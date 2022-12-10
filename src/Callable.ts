@@ -2,6 +2,7 @@ import Interpreter from './Interpreter';
 import Token, { Literal } from './Token';
 
 export abstract class Callable {
+  code = '<native function>';
   arity(): number {
     return 0;
   }

@@ -19,8 +19,18 @@ import {
   VariableExpr,
 } from './Expr';
 import { isObject } from './helpers';
-import { Clock, Map, Print, Push, Random } from './NativeFns';
-import Length from './NativeFns/Length';
+import {
+  Clock,
+  Filter,
+  Length,
+  Map,
+  Print,
+  Push,
+  Random,
+  Range,
+  Reduce,
+  Slice,
+} from './NativeFns';
 import RabbitFunction from './RabbitFunction';
 import Return from './Return';
 import RuntimeError from './RuntimeError';
@@ -30,7 +40,6 @@ import {
   ForInStmt,
   FunctionStmt,
   IfStmt,
-  RangeStmt,
   ReturnStmt,
   Stmt,
   StmtVisitor,
@@ -82,6 +91,10 @@ export default class Interpreter
       this.globals.define('push', new Push());
       this.globals.define('length', new Length());
       this.globals.define('map', new Map());
+      this.globals.define('range', new Range());
+      this.globals.define('reduce', new Reduce());
+      this.globals.define('filter', new Filter());
+      this.globals.define('slice', new Slice());
     }
   }
 
@@ -258,25 +271,6 @@ export default class Interpreter
   }
   isIntegerNumber(x: unknown): x is number {
     return typeof x === 'number' && Number.isInteger(x);
-  }
-  visitRangeStmt(stmt: RangeStmt): Literal {
-    const { initializer, iterable, body } = stmt;
-    const outerEnvironment = this.environment;
-    this.environment = new Environment(outerEnvironment);
-    const expression = this.evaluate(iterable);
-    if (!this.isIntegerNumber(expression)) {
-      throw new RuntimeError(
-        initializer,
-        'Expression in for range loop needs to be an integer number.'
-      );
-    }
-    this.environment.define(initializer, 0);
-    for (let i = 0; i < expression; i++) {
-      this.environment.assign(initializer, i);
-      this.execute(body);
-    }
-    this.environment = outerEnvironment;
-    return null;
   }
   visitVariableExpr(expr: VariableExpr): Literal {
     return this.environment.get(expr.name);

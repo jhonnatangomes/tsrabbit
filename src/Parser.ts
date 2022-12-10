@@ -21,7 +21,6 @@ import {
   ForInStmt,
   FunctionStmt,
   IfStmt,
-  RangeStmt,
   ReturnStmt,
   Stmt,
   VarStmt,
@@ -71,7 +70,6 @@ const {
   RIGHT_BRACKET,
   PIPE,
   IN,
-  RANGE,
   ARROW,
 } = TokenType;
 
@@ -181,23 +179,7 @@ export default class Parser {
         'Expect variable name after comma in for range loop.'
       );
     }
-    this.consume(IN, "Expect 'in' keyword after variables in for range loop.");
-    if (this.match(RANGE)) {
-      if (index !== null) {
-        this.error(
-          index,
-          'A single variable should be declared in for range loops.'
-        );
-      }
-      this.consume(LEFT_PAREN, "Expect '(' after range keyword.");
-      const rangeNumber = this.expression();
-      this.consume(
-        RIGHT_PAREN,
-        "Expect ')' after expression in range keyword."
-      );
-      const statement = this.statement();
-      return new RangeStmt(arrElement, rangeNumber, statement);
-    }
+    this.consume(IN, "Expect 'in' keyword after variables in for in loop.");
     const iterable = this.expression();
     const statement = this.statement();
     const initializers = [arrElement];
@@ -482,7 +464,7 @@ export default class Parser {
         body,
         this.source.substring(
           openingPipe.position.start,
-          finalBrace.position.end + 1
+          finalBrace.position.end
         )
       );
     }
@@ -497,7 +479,7 @@ export default class Parser {
       [body],
       this.source.substring(
         openingPipe.position.start,
-        expressionToken.position.end + 1
+        expressionToken.position.end
       )
     );
   }

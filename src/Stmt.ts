@@ -7,7 +7,6 @@ export interface StmtVisitor<R> {
   visitForInStmt: (stmt: ForInStmt) => R;
   visitFunctionStmt: (stmt: FunctionStmt) => R;
   visitIfStmt: (stmt: IfStmt) => R;
-  visitRangeStmt: (stmt: RangeStmt) => R;
   visitReturnStmt: (stmt: ReturnStmt) => R;
   visitWhileStmt: (stmt: WhileStmt) => R;
   visitVarStmt: (stmt: VarStmt) => R;
@@ -120,29 +119,6 @@ export class IfStmt implements Stmt {
       condition: this.condition.toString(),
       thenBranch: this.thenBranch.toString(),
       elseBranch: this.elseBranch?.toString(),
-    };
-  }
-}
-
-export class RangeStmt implements Stmt {
-  initializer: Token;
-  iterable: Expr;
-  body: Stmt;
-
-  constructor(initializer: Token, iterable: Expr, body: Stmt) {
-    this.initializer = initializer;
-    this.iterable = iterable;
-    this.body = body;
-  }
-
-  accept<R>(visitor: StmtVisitor<R>): R {
-    return visitor.visitRangeStmt(this);
-  }
-  toString() {
-    return {
-      initializer: this.initializer.toString(),
-      iterable: this.iterable.toString(),
-      body: this.body.toString(),
     };
   }
 }

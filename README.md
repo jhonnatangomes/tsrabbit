@@ -46,7 +46,7 @@ statement      -> exprStmt
 returnStmt     -> "return" expression? ";" ;
 forStmt        -> longFor | rangeFor ;
 rangeFor       -> "for" IDENTIFIER ("," IDENTIFIER) * "in"
-               ("range" "(" expression ")" | expression) statement;
+               expression statement;
 longFor        -> "for" "(" ( varDecl | exprStmt | ; )
                 expression? ";"
                 expression? ")" statement ;
@@ -76,7 +76,7 @@ operator       -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
 primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash | lambda
                | "(" expression ")"
                | IDENTIFIER;
-lambda         -> "|" parameters? ")" "=>" ( block | expression );
+lambda         -> "|" parameters? "|" "=>" ( block | expression );
 array          -> "[" expression ( "," primary  )* ( "," )* "]"
 hash           -> "{" IDENTIFIER ":" expression ( "," IDENTIFIER ":" primary )* ( "," )* "}"
 ```
