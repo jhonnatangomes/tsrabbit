@@ -26,7 +26,7 @@ export default class Print extends Callable {
       if (value instanceof RabbitFunction) {
         return value.declaration.code;
       }
-      return value.code;
+      return '<native function>';
     }
 
     return value;

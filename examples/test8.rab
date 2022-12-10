@@ -1,0 +1,10 @@
+var x = "global";
+
+{
+  fun printX(){
+      print(x);
+  }
+  printX();
+  var x = "local";
+  printX();
+}

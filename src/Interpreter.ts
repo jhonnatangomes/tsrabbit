@@ -64,13 +64,15 @@ const {
   PIPE_PIPE,
 } = TokenType;
 
+export type Locals = Map<Expr, number>;
+
 export default class Interpreter
   implements ExprVisitor<Literal>, StmtVisitor<Literal>
 {
   source: string;
   globals: Environment = new Environment();
   environment: Environment = this.globals;
-  private locals = new Map<Expr, number>();
+  locals: Locals;
 
   interpret = (statements: Stmt[]) => {
     try {
@@ -81,9 +83,10 @@ export default class Interpreter
     }
   };
 
-  constructor(source: string, globalEnv: Environment) {
+  constructor(source: string, globalEnv: Environment, locals?: Locals) {
     this.source = source;
     this.globals = globalEnv;
+    this.locals = locals || new Map();
     this.environment = this.globals;
     if (!this.globals.values['clock']) {
       this.globals.define('clock', new Clock());
@@ -237,7 +240,8 @@ export default class Interpreter
   }
 
   visitExpressionStmt(stmt: ExpressionStmt): Literal {
-    return this.evaluate(stmt.expression);
+    const value = this.evaluate(stmt.expression);
+    return value instanceof RabbitFunction ? value.declaration.code : value;
   }
 
   visitVarStmt(stmt: VarStmt): Literal {
@@ -250,7 +254,7 @@ export default class Interpreter
     return null;
   }
   visitForInStmt(stmt: ForInStmt): Literal {
-    const { initializerTokens, initializers, iterable, body } = stmt;
+    const { initializerTokens, iterable, body } = stmt;
     const outerEnvironment = this.environment;
     this.environment = new Environment(outerEnvironment);
     if (initializerTokens.length === 2) {

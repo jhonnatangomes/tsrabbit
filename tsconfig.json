@@ -4,6 +4,6 @@
     "moduleResolution": "Node",
     "lib": ["ES2022", "DOM"],
     "esModuleInterop": true,
-    "outDir": "bin",
+    "outDir": "bin"
   }
 }

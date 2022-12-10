@@ -1,0 +1,2 @@
+var fn = |x| => x * -2;
+print(fn(5));

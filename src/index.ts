@@ -4,12 +4,14 @@ import { createInterface } from 'readline';
 import Environment from './Environment';
 import { hadError, hadRuntimeError, resetError } from './Error';
 import { logNode } from './helpers';
-import Interpreter from './Interpreter';
+import Interpreter, { Locals } from './Interpreter';
 import Resolver from './Resolver';
 import Parser from './Parser';
 import Scanner from './Scanner';
 type Flag = typeof VALID_FLAGS[number];
 const VALID_FLAGS = ['--print-tokens', '--print-ast'];
+
+let gLocals = new Map();
 
 function main() {
   const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
@@ -48,7 +50,7 @@ function runRepl(flags: Flag[]) {
   console.log('Welcome to TsRabbit');
   rl.prompt();
   rl.on('line', (line) => {
-    run(line, flags, true, environment);
+    run(line, flags, true, environment, gLocals);
     resetError();
     rl.prompt();
   }).on('close', () => console.log('Thanks for using TsRabbit'));
@@ -58,7 +60,8 @@ function run(
   source: string,
   flags: Flag[],
   isRepl = false,
-  environment?: Environment
+  environment?: Environment,
+  locals?: Locals
 ) {
   const scanner = new Scanner(source);
   const tokens = scanner.scanTokens();
@@ -72,7 +75,12 @@ function run(
     logNode(statements);
   }
   if (hadError) return;
-  const interpreter = new Interpreter(source, environment || new Environment());
+  const interpreter = new Interpreter(
+    source,
+    environment || new Environment(),
+    locals
+  );
+  gLocals = interpreter.locals;
   const resolver = new Resolver(interpreter, source);
   resolver.resolveStmt(statements);
   if (hadError) return;
