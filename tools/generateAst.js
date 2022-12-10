@@ -37,7 +37,7 @@ function main() {
       'Block        -> statements: Stmt[]',
       'Expression   -> expression: Expr',
       'ForIn        -> initializers: Token[], iterable: Expr, body: Stmt',
-      'Function     -> name: Token, params: Token[], body: Stmt[]',
+      'Function     -> name: Token, params: Token[], body: Stmt[], code: string',
       'If           -> condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null',
       'Range        -> initializer: Token, iterable: Expr, body: Stmt',
       'Return       -> keyword: Token, value: Expr | null',

@@ -1,5 +1,6 @@
 import { Callable } from '../Callable';
 import Interpreter from '../Interpreter';
+import RabbitFunction from '../RabbitFunction';
 import { Literal } from '../Token';
 
 export default class Print extends Callable {
@@ -20,6 +21,9 @@ export default class Print extends Callable {
         return text.replace('.0', '');
       }
       return text;
+    }
+    if (value instanceof RabbitFunction) {
+      return value.declaration.code;
     }
 
     return value;

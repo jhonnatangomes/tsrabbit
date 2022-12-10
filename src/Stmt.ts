@@ -79,11 +79,13 @@ export class FunctionStmt implements Stmt {
   name: Token;
   params: Token[];
   body: Stmt[];
+  code: string;
 
-  constructor(name: Token, params: Token[], body: Stmt[]) {
+  constructor(name: Token, params: Token[], body: Stmt[], code: string) {
     this.name = name;
     this.params = params;
     this.body = body;
+    this.code = code;
   }
 
   accept<R>(visitor: StmtVisitor<R>): R {
@@ -94,6 +96,7 @@ export class FunctionStmt implements Stmt {
       name: this.name.toString(),
       params: this.params.map(v => v.toString()),
       body: this.body.map(v => v.toString()),
+      code: this.code.toString(),
     };
   }
 }

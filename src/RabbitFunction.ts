@@ -6,7 +6,7 @@ import { FunctionStmt } from './Stmt';
 import { Literal } from './Token';
 
 export default class RabbitFunction extends Callable {
-  private declaration: FunctionStmt;
+  declaration: FunctionStmt;
   private closure: Environment;
   constructor(declaration: FunctionStmt, closure: Environment) {
     super();

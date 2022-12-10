@@ -105,6 +105,7 @@ export default class Parser {
   }
 
   private function() {
+    const fun = this.previous();
     const name = this.consume(IDENTIFIER, `Expect function name.`);
     this.consume(LEFT_PAREN, `Expect '(' after function name.`);
     const params: Token[] = [];
@@ -119,7 +120,13 @@ export default class Parser {
     this.consume(RIGHT_PAREN, "Expect ')' after parameters.");
     this.consume(LEFT_BRACE, "Expect '{' before function body");
     const body = this.block();
-    return new FunctionStmt(name, params, body);
+    const finalBrace = this.previous();
+    return new FunctionStmt(
+      name,
+      params,
+      body,
+      this.source.substring(fun.position.start, finalBrace.position.end + 1)
+    );
   }
 
   private varDeclaration() {
