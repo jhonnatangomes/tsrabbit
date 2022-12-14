@@ -20,8 +20,10 @@ import {
 } from './Expr';
 import { isObject } from './helpers';
 import {
+  Ceil,
   Clock,
   Filter,
+  Floor,
   Length,
   Map as MapBuiltin,
   Print,
@@ -29,6 +31,7 @@ import {
   Random,
   Range,
   Reduce,
+  Round,
   Slice,
 } from './NativeFns';
 import RabbitFunction from './RabbitFunction';
@@ -99,6 +102,9 @@ export default class Interpreter
       this.globals.define('reduce', new Reduce());
       this.globals.define('filter', new Filter());
       this.globals.define('slice', new Slice());
+      this.globals.define('ceil', new Ceil());
+      this.globals.define('floor', new Floor());
+      this.globals.define('round', new Round());
     }
   }
 

@@ -1,5 +1,7 @@
+export { default as Ceil } from './Ceil';
 export { default as Clock } from './Clock';
 export { default as Filter } from './Filter';
+export { default as Floor } from './Floor';
 export { default as Length } from './Length';
 export { default as Map } from './Map';
 export { default as Print } from './Print';
@@ -7,4 +9,5 @@ export { default as Push } from './Push';
 export { default as Random } from './Random';
 export { default as Range } from './Range';
 export { default as Reduce } from './Reduce';
+export { default as Round } from './Round';
 export { default as Slice } from './Slice';

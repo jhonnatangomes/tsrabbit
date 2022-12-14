@@ -2,7 +2,8 @@ var unorderedArr = [
    390,  694,  478,  999,
    638, -634,  -14,  860,
   -632, -850, -718,  966,
-  -859,  667,  -65, -479
+  -859,  667,  -65, -479,
+  -5, 12, 367, -1000,
 ];
 
 fun merge(arr, arr2) {
@@ -31,7 +32,7 @@ fun merge(arr, arr2) {
 
 fun mergeSort(arr) {
   if (length(arr) <= 1) return arr;
-  var middleIndex = length(arr) / 2;
+  var middleIndex = floor(length(arr) / 2);
   var leftArr = slice(arr, 0, middleIndex);  
   var rightArr = slice(arr, middleIndex, length(arr));
   return merge(mergeSort(leftArr), mergeSort(rightArr));
