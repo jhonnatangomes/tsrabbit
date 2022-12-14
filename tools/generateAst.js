@@ -13,12 +13,12 @@ function main() {
     'Expr',
     [
       'ArrayLiteral -> value: Expr[]',
-      'Assign       -> name: Token, value: Expr',
+      'Assign       -> name: Token, value: Expr, accessors?: Expr[]',
       'Binary       -> left: Expr, operator: Token, right: Expr',
       'Call         -> callee: Expr, paren: Token, args: Expr[]',
       'Grouping     -> expression: Expr',
       'HashLiteral  -> value: HashLiteral',
-      'IndexAccess  -> callee: Expr, accessors: Expr[], accessorsTokens: Token[]',
+      'IndexAccess  -> token: Token, accessors: Expr[], accessorsTokens: Token[]',
       'Lambda       -> params: Token[], body: Stmt[], code: string',
       'Literal      -> value: Literal',
       'Logical      -> left: Expr, operator: Token, right: Expr',
@@ -87,7 +87,7 @@ function defineType(baseName, className, fieldList) {
   fileContent += '\n';
   fileContent += `  constructor(${fieldList}) {\n`;
   fields.forEach((field) => {
-    const name = field.split(':')[0].trim();
+    const name = field.split(':')[0].trim().replace('?', '');
     fileContent += `    this.${name} = ${name};\n`;
   });
   fileContent += '  }\n\n';
@@ -109,7 +109,7 @@ function defineType(baseName, className, fieldList) {
     }
     const name = field.split(':')[0].trim();
     const type = field.split(':')[1].trim();
-    fileContent += `      ${name}: this.${name}${
+    fileContent += `      ${name.replace('?', '')}: this.${name}${
       type.includes('null') ? '?' : ''
     }${
       type.includes('[]')
@@ -117,7 +117,7 @@ function defineType(baseName, className, fieldList) {
         : type !== 'Literal'
         ? '.toString()'
         : ''
-    },\n`;
+    }${name.includes('?') ? ' || null' : ''},\n`;
   });
   fileContent += `    };\n`;
   fileContent += `  }\n`;

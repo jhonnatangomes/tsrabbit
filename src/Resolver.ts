@@ -63,7 +63,17 @@ export default class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     );
   }
   visitIndexAccessExpr(expr: IndexAccessExpr): void {
-    this.resolveExpr(expr.callee);
+    if (
+      this.scopes.length !== 0 &&
+      this.scopes.at(-1)?.[expr.token.lexeme] === false
+    ) {
+      tokenError(
+        expr.token,
+        "Can't read local variable in its own initializer.",
+        this.source
+      );
+    }
+    this.resolveLocal(expr.token, expr);
     for (const accessor of expr.accessors) {
       this.resolveExpr(accessor);
     }

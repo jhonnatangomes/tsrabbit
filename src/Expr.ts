@@ -44,10 +44,12 @@ export class ArrayLiteralExpr implements Expr {
 export class AssignExpr implements Expr {
   name: Token;
   value: Expr;
+  accessors?: Expr[];
 
-  constructor(name: Token, value: Expr) {
+  constructor(name: Token, value: Expr, accessors?: Expr[]) {
     this.name = name;
     this.value = value;
+    this.accessors = accessors;
   }
 
   accept<R>(visitor: ExprVisitor<R>): R {
@@ -57,6 +59,7 @@ export class AssignExpr implements Expr {
     return {
       name: this.name.toString(),
       value: this.value.toString(),
+      accessors: this.accessors?.map(v => v.toString()) || null,
     };
   }
 }
@@ -144,12 +147,12 @@ export class HashLiteralExpr implements Expr {
 }
 
 export class IndexAccessExpr implements Expr {
-  callee: Expr;
+  token: Token;
   accessors: Expr[];
   accessorsTokens: Token[];
 
-  constructor(callee: Expr, accessors: Expr[], accessorsTokens: Token[]) {
-    this.callee = callee;
+  constructor(token: Token, accessors: Expr[], accessorsTokens: Token[]) {
+    this.token = token;
     this.accessors = accessors;
     this.accessorsTokens = accessorsTokens;
   }
@@ -159,7 +162,7 @@ export class IndexAccessExpr implements Expr {
   }
   toString() {
     return {
-      callee: this.callee.toString(),
+      token: this.token.toString(),
       accessors: this.accessors.map(v => v.toString()),
       accessorsTokens: this.accessorsTokens.map(v => v.toString()),
     };

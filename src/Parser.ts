@@ -277,6 +277,10 @@ export default class Parser {
         const name = expr.name;
         return new AssignExpr(name, value);
       }
+      if (expr instanceof IndexAccessExpr) {
+        const name = expr.token;
+        return new AssignExpr(name, value, expr.accessors);
+      }
       this.error(equals, 'Invalid assignment target.');
     }
     return expr;
@@ -371,24 +375,13 @@ export default class Parser {
 
   private call(): Expr {
     let expr = this.primary();
-    const accessors: Expr[] = [];
-    const accessorsTokens: Token[] = [];
-
     while (true) {
       if (this.match(LEFT_PAREN)) {
         expr = this.finishCall(expr);
-      } else if (this.match(LEFT_BRACKET)) {
-        if (this.peek().type !== RIGHT_BRACKET) {
-          accessorsTokens.push(this.peek());
-          accessors.push(this.expression());
-        }
-        this.consume(RIGHT_BRACKET, "Expect ']' after indexed access");
       } else {
         break;
       }
     }
-    if (accessors.length !== 0)
-      return new IndexAccessExpr(expr, accessors, accessorsTokens);
     return expr;
   }
 
@@ -429,7 +422,19 @@ export default class Parser {
     if (this.match(NUMBER, STRING))
       return new LiteralExpr(this.previous().literal ?? null);
     if (this.match(IDENTIFIER)) {
-      return new VariableExpr(this.previous());
+      const identifier = this.previous();
+      const accessors = [];
+      const accessorsTokens = [];
+      while (this.match(LEFT_BRACKET)) {
+        if (this.peek().type !== RIGHT_BRACKET) {
+          accessorsTokens.push(this.peek());
+          accessors.push(this.expression());
+        }
+        this.consume(RIGHT_BRACKET, "Expect ']' after indexed access");
+      }
+      if (accessors.length !== 0)
+        return new IndexAccessExpr(identifier, accessors, accessorsTokens);
+      return new VariableExpr(identifier);
     }
     if (this.match(LEFT_PAREN)) {
       const expr = this.expression();

@@ -216,15 +216,15 @@ term           -> factor ( ( "-" | "+" ) factor )* ;
 factor         -> unary ( ( "/" | "*" ) unary )* ;
 unary          -> ( "-" | "!" ) unary
                | call ;
-functionCall   -> primary ( "(" arguments? ")" ) * ("|" functionCall) * ;
 indexedAccess  -> primary ( "[" expression "]" ) *
-call           -> functionCall | indexedAccess ;
+call           -> primary ( "(" arguments? ")" ) * ("|" call) * ;
 arguments      -> expression ( "," expression ) *;
 binary         -> expression operator expression ;
 operator       -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/";
 primary        -> NUMBER | STRING | "true" | "false" | "nil" | array | hash | lambda
                | "(" expression ")"
-               | IDENTIFIER;
+               | IDENTIFIER
+               | indexedAccess ;
 lambda         -> "|" parameters? "|" "=>" ( block | expression );
 array          -> "[" expression ( "," primary  )* ( "," )* "]"
 hash           -> "{" IDENTIFIER ":" expression ( "," IDENTIFIER ":" primary )* ( "," )* "}"

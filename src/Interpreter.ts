@@ -196,7 +196,7 @@ export default class Interpreter
     return hashValues;
   }
   visitIndexAccessExpr(expr: IndexAccessExpr): Literal {
-    let variable = this.evaluate(expr.callee);
+    let variable = this.lookupVariable(expr.token, expr);
     expr.accessors.forEach((accessor, i) => {
       const evaluatedAccessor = this.evaluate(accessor);
       if (Array.isArray(variable)) {
@@ -226,10 +226,14 @@ export default class Interpreter
           variable = value;
           return;
         }
+        throw new RuntimeError(
+          expr.accessorsTokens[i],
+          `Cannot access hash with non-string index.`
+        );
       }
       throw new RuntimeError(
         expr.accessorsTokens[i],
-        `Cannot access hash with non-string index.`
+        'Cannot access values that are not arrays or hashes with an index.'
       );
     });
     return variable;
@@ -298,11 +302,53 @@ export default class Interpreter
     const value = this.evaluate(expr.value);
     const distance = this.locals.get(expr);
     if (distance !== undefined) {
-      this.environment.assignAt(distance, expr.name, value);
+      if (expr.accessors) {
+        const originalLiteral = this.environment.getAt(distance, expr.name);
+        this.environment.assignAt(
+          distance,
+          expr.name,
+          this.changeValueAtIndex(
+            //@ts-ignore
+            originalLiteral,
+            expr.accessors.map(this.evaluate.bind(this)),
+            value
+          )
+        );
+      } else {
+        this.environment.assignAt(distance, expr.name, value);
+      }
     } else {
-      this.globals.assign(expr.name, value);
+      if (expr.accessors) {
+        const originalLiteral = this.globals.get(expr.name);
+        this.globals.assign(
+          expr.name,
+          this.changeValueAtIndex(
+            //@ts-ignore
+            originalLiteral,
+            expr.accessors.map(this.evaluate.bind(this)),
+            value
+          )
+        );
+        this.globals.assign(expr.name, originalLiteral);
+      } else {
+        this.globals.assign(expr.name, value);
+      }
     }
     return value;
+  }
+
+  changeValueAtIndex(
+    literal: unknown[] | Record<string, unknown>,
+    indexes: (number | string)[],
+    value: Literal
+  ) {
+    if (indexes.length === 0) return value;
+    const path = indexes[0];
+    //@ts-ignore
+    const nextObj = literal[path];
+    //@ts-ignore
+    literal[path] = this.changeValueAtIndex(nextObj, indexes.slice(1), value);
+    return literal;
   }
 
   visitBlockStmt(stmt: BlockStmt): Literal {
