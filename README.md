@@ -1,4 +1,4 @@
-# TsRabbit
+# Rabbit
 
 This is a typescript implementation of the tree-walk interpreter of the Lox programming language from the excellent book [Crafting Interpreters], by Robert Nystrom. It started out as the same language from the book, but I eventually added some features I wanted. I decided to not implement classes in the language, because I wanted it to be purely functional. This decision also guided me on the creation of some features, like the implementation of a pipe operator and lambda expressions.
 
